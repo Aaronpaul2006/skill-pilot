@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat — SKILL PILOT</title>
+    <meta name="description" content="Chat with SKILL PILOT AI tutor, adapted to your learning style and pace.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4); --shadow-accent:0 4px 24px rgba(108,99,255,0.2);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}
+        @keyframes msgIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes copyPop{0%{transform:scale(1);}50%{transform:scale(1.2);}100%{transform:scale(1);}}
+
+        /* HEADER */
+        .chat-header{height:60px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;z-index:10;}
+        .header-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;}
+        .header-logo span{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .subject-sel{background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.2s;}
+        .subject-sel:focus{outline:none;border-color:var(--accent);}
+        .header-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+        .profile-pill{background:var(--accent-glow);border:1px solid var(--accent);border-radius:20px;padding:4px 12px;font-size:0.78rem;font-family:'Syne',sans-serif;font-weight:600;color:var(--text-accent);white-space:nowrap;}
+        .header-icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:6px;border-radius:6px;transition:all 0.2s;text-decoration:none;}
+        .header-icon-btn:hover{color:var(--text-primary);background:var(--border);}
+
+        /* ADAPT BANNER */
+        .adapt-banner{background:linear-gradient(135deg,rgba(108,99,255,0.1),rgba(167,139,250,0.05));border-bottom:1px solid var(--border);padding:8px 20px;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;flex-shrink:0;}
+        .banner-text{color:var(--text-muted);}
+        .banner-signals{display:flex;gap:16px;color:var(--text-muted);}
+        .signal-count{font-family:'Syne',sans-serif;font-weight:600;color:var(--text-accent);}
+        .banner-toggle{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.78rem;}
+
+        /* MESSAGES */
+        .messages-area{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:var(--accent) var(--border);}
+        .messages-area::-webkit-scrollbar{width:5px;}
+        .messages-area::-webkit-scrollbar-track{background:var(--border);}
+        .messages-area::-webkit-scrollbar-thumb{background:var(--accent);border-radius:10px;}
+
+        /* WELCOME CARD */
+        .welcome-card{margin:20px auto;max-width:520px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:30px;text-align:center;animation:fadeInUp 0.4s ease forwards;}
+        .welcome-ai-icon{width:64px;height:64px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 16px;box-shadow:var(--shadow-accent);}
+        .welcome-card h3{font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:8px;}
+        .welcome-card p{color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;}
+        .starter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+        .starter-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;font-size:0.85rem;text-align:left;transition:all 0.2s;color:var(--text-primary);}
+        .starter-card:hover{border-color:var(--accent);background:var(--accent-glow);color:var(--text-accent);}
+
+        /* MESSAGE BUBBLES */
+        .msg-row{display:flex;gap:10px;align-items:flex-end;animation:msgIn 0.3s ease forwards;position:relative;}
+        .msg-row.user{flex-direction:row-reverse;}
+        .msg-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .msg-avatar.ai{background:var(--gradient-main);box-shadow:var(--shadow-accent);}
+        .msg-avatar.user-av{background:var(--bg-card);border:1px solid var(--border);}
+        .bubble-wrap{position:relative;}
+        .bubble{max-width:70%;padding:12px 16px;border-radius:16px;font-size:0.92rem;line-height:1.6;}
+        .bubble.user{background:var(--accent-glow);border:1px solid var(--accent);border-radius:16px 16px 4px 16px;}
+        .bubble.ai{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px 16px 16px 4px;}
+        .bubble-meta{font-size:0.72rem;color:var(--text-muted);margin-top:5px;display:flex;gap:8px;align-items:center;}
+        .style-badge{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:1px 6px;}
+
+        /* HOVER TIMESTAMP */
+        .msg-ts{opacity:0;transition:opacity 0.2s;font-size:0.7rem;color:var(--text-muted);}
+        .msg-row:hover .msg-ts{opacity:1;}
+
+        /* COPY BUTTON */
+        .copy-btn{opacity:0;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:0.72rem;cursor:pointer;color:var(--text-muted);transition:all 0.2s;margin-left:6px;display:inline-flex;align-items:center;gap:3px;}
+        .msg-row:hover .copy-btn{opacity:1;}
+        .copy-btn:hover{border-color:var(--accent);color:var(--text-accent);}
+        .copy-btn.copied{color:var(--accent3);border-color:var(--accent3);animation:copyPop 0.3s ease;}
+
+        /* ERROR BUBBLE */
+        .error-bubble{background:#1f0a10;border:1px solid var(--accent2);border-radius:12px;padding:12px 16px;font-size:0.88rem;color:var(--accent2);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+        .retry-btn{background:var(--accent2);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;}
+
+        /* TYPING */
+        #typing-indicator{display:none;align-items:center;gap:10px;animation:msgIn 0.3s ease;}
+        .typing-dots{display:flex;gap:5px;}
+        .typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);animation:bounce 1.4s infinite;}
+        .typing-dot:nth-child(2){animation-delay:0.2s;}
+        .typing-dot:nth-child(3){animation-delay:0.4s;}
+        .typing-text{font-size:0.82rem;color:var(--text-muted);font-style:italic;}
+
+        /* INPUT */
+        .input-area{background:var(--bg-secondary);border-top:1px solid var(--border);padding:12px 20px;flex-shrink:0;}
+        .hint-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+        .hint{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:5px 12px;font-size:0.78rem;cursor:pointer;transition:all 0.2s;color:var(--text-muted);}
+        .hint:hover{border-color:var(--accent);color:var(--text-accent);}
+        .input-row{display:flex;gap:10px;align-items:flex-end;}
+        #user-input{flex:1;background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;color:var(--text-primary);padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.95rem;resize:none;max-height:120px;overflow-y:auto;transition:all 0.2s;line-height:1.5;}
+        #user-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+        #send-btn{width:44px;height:44px;background:var(--gradient-main);border:none;border-radius:12px;color:white;cursor:pointer;font-size:1.1rem;transition:all 0.2s;box-shadow:var(--shadow-accent);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+        #send-btn:hover{transform:scale(1.05);}
+        #send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+        /* CHAR COUNTER */
+        .char-counter{font-size:0.72rem;color:var(--text-muted);text-align:right;margin-top:5px;transition:color 0.2s;}
+        .char-counter.warn{color:#f7971e;}
+        .char-counter.error{color:var(--accent2);}
+
+        @media(max-width:768px){
+            .header-logo{font-size:0.95rem;}
+            .adapt-banner{font-size:0.75rem;}
+            .bubble{max-width:85%;}
+            .starter-grid{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="chat-header">
+    <div class="header-logo">✈️ <span>SKILL PILOT</span></div>
+    <select class="subject-sel" id="subject-select">
+        <option value="General" {% if profile.subject_focus == 'General' %}selected{% endif %}>General</option>
+        <option value="Mathematics" {% if profile.subject_focus == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+        <option value="Physics" {% if profile.subject_focus == 'Physics' %}selected{% endif %}>Physics</option>
+        <option value="Chemistry" {% if profile.subject_focus == 'Chemistry' %}selected{% endif %}>Chemistry</option>
+        <option value="Computer Science" {% if profile.subject_focus == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+        <option value="Data Science" {% if profile.subject_focus == 'Data Science' %}selected{% endif %}>Data Science</option>
+        <option value="Electronics" {% if profile.subject_focus == 'Electronics' %}selected{% endif %}>Electronics</option>
+        <option value="Civil Engineering" {% if profile.subject_focus == 'Civil Engineering' %}selected{% endif %}>Civil Engineering</option>
+        <option value="Mechanical Engineering" {% if profile.subject_focus == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+        <option value="Biology" {% if profile.subject_focus == 'Biology' %}selected{% endif %}>Biology</option>
+    </select>
+    <div class="header-right">
+        <div class="profile-pill">🎨 {{ profile.learning_style }} | ⚡ <span id="pace-display">{{ profile.learning_pace }}</span></div>
+        <a href="/dashboard" class="header-icon-btn" title="Dashboard">🏠</a>
+        <button class="header-icon-btn" onclick="clearChat()" title="Clear chat">🗑</button>
+    </div>
+</header>
+
+<div class="adapt-banner" id="adapt-banner">
+    <span class="banner-text">🧠 Adapting to your <strong>{{ profile.learning_style }}</strong> style at <strong><span id="banner-pace">{{ profile.learning_pace }}</span></strong> pace</span>
+    <span class="banner-signals">
+        🐢 <span class="signal-count" id="slow-count">{{ profile.slow_signals }}</span>
+        &nbsp;🚀 <span class="signal-count" id="fast-count">{{ profile.fast_signals }}</span>
+        <button class="banner-toggle" onclick="toggleBanner()">▲ hide</button>
+    </span>
+</div>
+
+<div class="messages-area" id="messages-container">
+
+    {% if messages|length == 0 %}
+    <div class="welcome-card" id="welcome-card">
+        <div class="welcome-ai-icon">🧠</div>
+        <h3>Hi {{ user.name }}! I'm your SKILL PILOT AI tutor.</h3>
+        <p>I've adapted to your <strong>{{ profile.learning_style }}</strong> learning style at <strong>{{ profile.learning_pace }}</strong> pace.<br>
+        {% if prefill_topic %}Ask me anything about <strong>{{ prefill_topic }}</strong>!{% else %}What would you like to study today?{% endif %}</p>
+        <div class="starter-grid">
+            <div class="starter-card" onclick="fillInput('📖 Explain a concept step by step')">📖 Explain a concept</div>
+            <div class="starter-card" onclick="fillInput('🧩 Give me a practice problem')">🧩 Practice problem</div>
+            <div class="starter-card" onclick="fillInput('⚡ Give me a quick topic summary')">⚡ Quick summary</div>
+            <div class="starter-card" onclick="fillInput('🎯 Quiz me on something')">🎯 Quiz me</div>
+        </div>
+    </div>
+    {% else %}
+    {% for msg in messages %}
+    <div class="msg-row {% if msg.role == 'user' %}user{% endif %}">
+        <div class="msg-avatar {% if msg.role == 'user' %}user-av{% else %}ai{% endif %}">{% if msg.role == 'user' %}🧑{% else %}🧠{% endif %}</div>
+        <div class="bubble-wrap">
+            <div class="bubble {% if msg.role == 'user' %}user{% else %}ai{% endif %}" {% if msg.role == 'assistant' %}data-content="{{ msg.content|replace('"','&quot;') }}"{% endif %}>
+                {{ msg.content|replace('\n','<br>')|safe }}
+            </div>
+            <div class="bubble-meta">
+                <span class="msg-ts">{{ msg.timestamp.strftime('%H:%M') }}</span>
+                {% if msg.role == 'assistant' %}<span class="style-badge">{{ profile.learning_style }} | {{ profile.learning_pace }}</span>
+                <button class="copy-btn" onclick="copyBubble(this)" title="Copy">📋 Copy</button>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div id="typing-indicator" style="display:none;">
+        <div class="msg-avatar ai">🧠</div>
+        <div>
+            <div class="bubble ai" style="padding:14px 16px;">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            <div class="bubble-meta typing-text">SKILL PILOT is thinking...</div>
+        </div>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="hint-row">
+        <div class="hint" onclick="fillInput('📖 Explain step by step')">📖 Step by step</div>
+        <div class="hint" onclick="fillInput('💡 Give me an example')">💡 Give example</div>
+        <div class="hint" onclick="fillInput('🎯 Quiz me on this topic')">🎯 Quiz me</div>
+        <div class="hint" onclick="fillInput('🔄 Explain this differently')">🔄 Explain differently</div>
+        <div class="hint" onclick="fillInput('⚡ Give me a harder problem')">⚡ Harder problem</div>
+    </div>
+    <div class="input-row">
+        <textarea id="user-input" rows="1" placeholder="Ask anything... (Shift+Enter for new line)" oninput="autoResize(this);updateCounter()" onkeydown="handleKey(event)"></textarea>
+        <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="char-counter" id="char-counter">0 / 2000</div>
+</div>
+
+<script>
+    const inputEl   = document.getElementById('user-input');
+    const sendBtn   = document.getElementById('send-btn');
+    const container = document.getElementById('messages-container');
+    const typingEl  = document.getElementById('typing-indicator');
+    const charEl    = document.getElementById('char-counter');
+    const MAX_CHARS = 2000;
+
+    {% if prefill_topic and messages|length == 0 %}
+    inputEl.value = "Explain {{ prefill_topic }} to me";
+    updateCounter();
+    {% endif %}
+
+    scrollToBottom(true);
+    inputEl.focus();
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function fillInput(text) {
+        inputEl.value = text;
+        inputEl.focus();
+        autoResize(inputEl);
+        updateCounter();
+    }
+
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+
+    function isAtBottom() {
+        return container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+    }
+
+    function scrollToBottom(force = false) {
+        if (force || isAtBottom()) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    function escapeHtml(t) {
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    // ── Character counter ─────────────────────────────────────────────────────
+    function updateCounter() {
+        const len = inputEl.value.length;
+        charEl.textContent = len + ' / ' + MAX_CHARS;
+        charEl.className = 'char-counter';
+        if (len > 1800) charEl.classList.add('warn');
+        if (len > MAX_CHARS) charEl.classList.add('error');
+    }
+
+    // ── Copy button ───────────────────────────────────────────────────────────
+    function copyBubble(btn) {
+        const bubble = btn.closest('.bubble-wrap').querySelector('.bubble');
+        const text   = bubble.innerText || bubble.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '✅ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '📋 Copy';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // ── Append message ────────────────────────────────────────────────────────
+    function appendMsg(role, content, time, style, pace) {
+        const wc = document.getElementById('welcome-card');
+        if (wc) wc.remove();
+
+        const atBottom = isAtBottom();
+        const row = document.createElement('div');
+        row.className = `msg-row${role === 'user' ? ' user' : ''}`;
+
+        const icon    = role === 'user' ? '🧑' : '🧠';
+        const avClass = role === 'user' ? 'user-av' : 'ai';
+        const bClass  = role === 'user' ? 'user' : 'ai';
+        const formatted = role === 'assistant'
+            ? escapeHtml(content).replace(/\n/g,'<br>')
+            : escapeHtml(content);
+        const badgeHtml = role === 'assistant'
+            ? `<span class="style-badge">${style || ''} | ${pace || ''}</span>
+               <button class="copy-btn" onclick="copyBubble(this)" title="Copy">📋 Copy</button>`
+            : '';
+
+        row.innerHTML = `
+            <div class="msg-avatar ${avClass}">${icon}</div>
+            <div class="bubble-wrap">
+                <div class="bubble ${bClass}" data-content="">${formatted}</div>
+                <div class="bubble-meta">
+                    <span class="msg-ts">${time}</span>
+                    ${badgeHtml}
+                </div>
+            </div>`;
+        container.insertBefore(row, typingEl);
+        if (atBottom || role === 'user') {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }
+    }
+
+    // ── Error bubble ──────────────────────────────────────────────────────────
+    function appendError(msg, retryFn) {
+        const atBottom = isAtBottom();
+        const row = document.createElement('div');
+        row.className = 'msg-row';
+        row.innerHTML = `
+            <div class="msg-avatar ai">🧠</div>
+            <div class="bubble-wrap">
+                <div class="error-bubble">
+                    ⚠️ ${escapeHtml(msg)}
+                    <button class="retry-btn" onclick="this.closest('.msg-row').remove();retryFn()">🔄 Retry</button>
+                </div>
+            </div>`;
+        container.insertBefore(row, typingEl);
+        if (atBottom) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ── Send message ──────────────────────────────────────────────────────────
+    async function sendMessage() {
+        const msg = inputEl.value.trim();
+        if (!msg) return;
+        if (msg.length > MAX_CHARS) {
+            charEl.className = 'char-counter error';
+            return;
+        }
+        const subject = document.getElementById('subject-select').value;
+
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        sendBtn.disabled = true;
+        updateCounter();
+
+        const now  = new Date();
+        const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        appendMsg('user', msg, time);
+
+        typingEl.style.display = 'flex';
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+
+        try {
+            const res = await fetch('/chat/send', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({message: msg, subject})
+            });
+            const data = await res.json();
+            typingEl.style.display = 'none';
+            sendBtn.disabled = false;
+
+            if (data.error) {
+                const errText = data.error.includes('too long')
+                    ? data.error
+                    : '⚠️ Error: ' + data.error;
+                appendError(errText, () => { inputEl.value = msg; updateCounter(); });
+            } else {
+                const now2 = new Date();
+                const t2   = now2.getHours().toString().padStart(2,'0') + ':' + now2.getMinutes().toString().padStart(2,'0');
+                appendMsg('assistant', data.response, t2, data.learning_style, data.learning_pace);
+                document.getElementById('slow-count').textContent = data.slow_signals;
+                document.getElementById('fast-count').textContent = data.fast_signals;
+                document.getElementById('pace-display').textContent = data.learning_pace;
+                document.getElementById('banner-pace').textContent  = data.learning_pace;
+            }
+        } catch(e) {
+            typingEl.style.display = 'none';
+            sendBtn.disabled = false;
+            const lastMsg = msg;
+            const t3  = new Date().getHours().toString().padStart(2,'0') + ':' + new Date().getMinutes().toString().padStart(2,'0');
+            appendError('Connection error. Please check your internet and try again.', () => {
+                inputEl.value = lastMsg;
+                updateCounter();
+            });
+        }
+        inputEl.focus();
+    }
+
+    async function clearChat() {
+        if (!confirm('Clear all chat history?')) return;
+        await fetch('/chat/clear', {method: 'POST'});
+        window.location.reload();
+    }
+
+    function toggleBanner() {
+        const banner = document.getElementById('adapt-banner');
+        banner.style.display = banner.style.display === 'none' ? 'flex' : 'none';
+    }
+</script>
+</body>
+</html>

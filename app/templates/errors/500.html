@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 — Server Error | SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#0a0a0f; --border:#2a2a3d;
+            --accent:#ff6584; --accent2:#ffb347;
+            --text:#e8e8f0; --muted:#888899;
+            --gradient:linear-gradient(135deg,#ff6584,#ffb347);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes orb{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+        .bg-orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:0.1;animation:orb 6s ease-in-out infinite;}
+        .bg-orb.a{width:380px;height:380px;background:#ff6584;top:-70px;right:-70px;}
+        .bg-orb.b{width:280px;height:280px;background:#ffb347;bottom:-50px;left:-50px;animation-delay:3s;}
+        .container{text-align:center;padding:40px 24px;animation:fadeUp 0.5s ease forwards;position:relative;z-index:1;}
+        .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:40px;opacity:0.7;}
+        .logo span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .error-num{font-family:'Syne',sans-serif;font-weight:800;font-size:7rem;line-height:1;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 4s ease-in-out infinite;margin-bottom:8px;}
+        .error-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:12px;}
+        .error-msg{color:var(--muted);font-size:1rem;margin-bottom:36px;max-width:380px;margin-left:auto;margin-right:auto;}
+        .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+        .btn{display:inline-block;padding:11px 24px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+        .btn-fill{background:var(--gradient);color:white;box-shadow:0 4px 20px rgba(255,101,132,0.25);}
+        .btn-fill:hover{transform:scale(1.04);}
+    </style>
+</head>
+<body>
+    <div class="bg-orb a"></div>
+    <div class="bg-orb b"></div>
+    <div class="container">
+        <div class="logo">✈️ <span>SKILL PILOT</span></div>
+        <div class="error-num">500</div>
+        <div class="error-title">Something Went Wrong</div>
+        <p class="error-msg">Our AI tutor hit a snag. We're on it! Try refreshing or head back to safety.</p>
+        <div class="btns">
+            <a href="javascript:history.back()" class="btn btn-outline">← Go Back</a>
+            <a href="/dashboard" class="btn btn-outline">🏠 Dashboard</a>
+            <a href="javascript:location.reload()" class="btn btn-fill">🔄 Try Again</a>
+        </div>
+    </div>
+</body>
+</html>

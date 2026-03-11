@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a26;
+            --border: #2a2a3d; --accent: #6c63ff; --accent-hover: #5a52e8;
+            --accent-glow: rgba(108,99,255,0.15); --accent2: #ff6584; --accent3: #43e97b;
+            --text-primary: #e8e8f0; --text-muted: #888899; --text-accent: #a78bfa;
+            --gradient-main: linear-gradient(135deg, #6c63ff, #a78bfa);
+            --shadow: 0 4px 24px rgba(0,0,0,0.4); --shadow-accent: 0 4px 24px rgba(108,99,255,0.2);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height:100vh; display:flex; overflow:hidden; }
+        .orb { position:fixed; border-radius:50%; filter:blur(80px); opacity:0.15; pointer-events:none; z-index:0; animation:pulse 6s ease-in-out infinite; }
+        .orb1 { width:400px; height:400px; background:#a78bfa; top:-100px; right:100px; }
+        .orb2 { width:300px; height:300px; background:var(--accent); bottom:-80px; left:100px; animation-delay:3s; }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.15;} 50%{transform:scale(1.1);opacity:0.22;} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes float { 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-12px) rotate(-2deg);} }
+        @keyframes float2 { 0%,100%{transform:translateY(0) rotate(3deg);} 50%{transform:translateY(-8px) rotate(3deg);} }
+        @keyframes float3 { 0%,100%{transform:translateY(0) rotate(-1deg);} 50%{transform:translateY(-14px) rotate(-1deg);} }
+
+        .left-col {
+            flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
+            padding:60px; background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(167,139,250,0.05));
+            border-right:1px solid var(--border); position:relative; z-index:1;
+        }
+        .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:2rem; margin-bottom:6px; }
+        .logo span { background:var(--gradient-main); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .welcome-sub { color:var(--text-muted); font-size:1rem; margin-bottom:50px; }
+        .float-cards { position:relative; width:280px; height:220px; }
+        .float-card {
+            position:absolute; background:var(--bg-card); border:1px solid var(--border);
+            border-radius:14px; padding:14px 20px; font-family:'Syne',sans-serif;
+            font-size:0.88rem; font-weight:600; box-shadow:var(--shadow);
+            white-space:nowrap;
+        }
+        .float-card.c1 { top:0; left:0; animation:float 4s ease-in-out infinite; border-color:var(--accent); }
+        .float-card.c2 { top:80px; right:0; animation:float2 5s ease-in-out infinite; border-color:#f7971e; }
+        .float-card.c3 { bottom:0; left:30px; animation:float3 3.5s ease-in-out infinite; border-color:var(--accent3); }
+
+        .right-col { width:460px; flex-shrink:0; display:flex; flex-direction:column; justify-content:center; padding:50px; overflow-y:auto; position:relative; z-index:1; }
+        .form-header { margin-bottom:28px; animation:fadeInUp 0.4s ease forwards; }
+        .form-header h1 { font-family:'Syne',sans-serif; font-weight:700; font-size:1.8rem; margin-bottom:6px; }
+        .form-header p { color:var(--text-muted); font-size:0.9rem; }
+        .flash-msg { padding:12px 16px; border-radius:10px; background:var(--bg-card); border-left:4px solid var(--accent2); font-size:0.88rem; margin-bottom:16px; color:var(--accent2); }
+        .flash-msg.success { border-left-color:var(--accent3); color:var(--accent3); }
+        .form-group { margin-bottom:16px; animation:fadeInUp 0.4s ease forwards; opacity:0; }
+        .form-group:nth-child(1){animation-delay:0.1s;} .form-group:nth-child(2){animation-delay:0.2s;}
+        label { display:block; font-size:0.82rem; font-weight:500; color:var(--text-muted); margin-bottom:7px; text-transform:uppercase; letter-spacing:0.05em; }
+        .input-wrap { position:relative; }
+        .input-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1rem; }
+        input { width:100%; background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; color:var(--text-primary); padding:12px 42px 12px 40px; font-family:'DM Sans',sans-serif; font-size:0.95rem; transition:all 0.2s; }
+        input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        .toggle-pw { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:0.85rem; transition:color 0.2s; }
+        .toggle-pw:hover { color:var(--text-accent); }
+        .forgot { text-align:right; margin-top:6px; }
+        .forgot a { font-size:0.82rem; color:var(--text-muted); text-decoration:none; }
+        .forgot a:hover { color:var(--text-accent); }
+        .btn-primary { width:100%; padding:13px 24px; background:var(--gradient-main); border:none; border-radius:10px; color:white; font-family:'Syne',sans-serif; font-weight:600; font-size:1rem; cursor:pointer; transition:all 0.2s; margin-top:8px; box-shadow:var(--shadow-accent); display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-primary:hover { transform:scale(1.02); box-shadow:0 8px 32px rgba(108,99,255,0.35); }
+        .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite; display:none; }
+        @keyframes spin { to{transform:rotate(360deg);} }
+        .divider { text-align:center; color:var(--text-muted); font-size:0.85rem; margin:20px 0; position:relative; }
+        .divider::before,.divider::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:var(--border); }
+        .divider::before{left:0;} .divider::after{right:0;}
+        .auth-link { text-align:center; font-size:0.88rem; color:var(--text-muted); }
+        .auth-link a { color:var(--text-accent); text-decoration:none; font-weight:500; }
+        .auth-link a:hover { text-decoration:underline; }
+        @media(max-width:768px){.left-col{display:none;}.right-col{width:100%;padding:40px 24px;}}
+    </style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="left-col">
+    <div class="logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="welcome-sub">Welcome back!</div>
+    <div class="float-cards">
+        <div class="float-card c1">🎨 Visual Learner</div>
+        <div class="float-card c2">⚡ Fast Pace</div>
+        <div class="float-card c3">🧠 AI Adapted</div>
+    </div>
+</div>
+
+<div class="right-col">
+    <div class="form-header">
+        <h1>Login to SKILL PILOT</h1>
+        <p>Your personalized tutor is waiting</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="flash-msg {% if category == 'success' %}success{% endif %}">
+            {{ '✅' if category == 'success' else '⚠️' }} {{ message }}
+        </div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/login" onsubmit="showLoading()">
+        <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-wrap">
+                <span class="input-icon">✉️</span>
+                <input type="email" name="email" placeholder="you@email.com" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                <input type="password" name="password" id="pw" placeholder="Your password" required>
+                <button type="button" class="toggle-pw" onclick="togglePassword('pw')">Show</button>
+            </div>
+            <div class="forgot"><a href="#">Forgot password?</a></div>
+        </div>
+        <button type="submit" class="btn-primary" id="login-btn">
+            <span id="btn-text">Login →</span>
+            <div class="spinner" id="spinner"></div>
+        </button>
+    </form>
+    <div class="divider">or</div>
+    <div class="auth-link">Don't have an account? <a href="/register">Register →</a></div>
+</div>
+
+<script>
+    function togglePassword(id) {
+        const el = document.getElementById(id);
+        const btn = el.nextElementSibling;
+        el.type = el.type === 'password' ? 'text' : 'password';
+        btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
+    }
+    function showLoading() {
+        document.getElementById('btn-text').textContent = 'Logging in...';
+        document.getElementById('spinner').style.display = 'block';
+        document.getElementById('login-btn').disabled = true;
+    }
+</script>
+</body>
+</html>

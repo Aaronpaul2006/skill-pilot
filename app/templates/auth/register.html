@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a26;
+            --border: #2a2a3d;
+            --accent: #6c63ff;
+            --accent-hover: #5a52e8;
+            --accent-glow: rgba(108,99,255,0.15);
+            --accent2: #ff6584;
+            --accent3: #43e97b;
+            --accent4: #f7971e;
+            --text-primary: #e8e8f0;
+            --text-muted: #888899;
+            --text-accent: #a78bfa;
+            --gradient-main: linear-gradient(135deg, #6c63ff, #a78bfa);
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --shadow-accent: 0 4px 24px rgba(108,99,255,0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 6s ease-in-out infinite;
+        }
+        .orb1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; }
+        .orb2 { width: 300px; height: 300px; background: #a78bfa; bottom: -80px; right: 200px; animation-delay: 3s; }
+        @keyframes pulse { 0%,100%{ transform: scale(1); opacity:0.15; } 50%{ transform: scale(1.1); opacity:0.22; } }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes float { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+
+        .left-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(167,139,250,0.05));
+            border-right: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+        .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; margin-bottom: 10px; }
+        .logo span { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { font-family: 'DM Sans', sans-serif; font-size: 1rem; color: var(--text-muted); margin-bottom: 50px; }
+        .features { display: flex; flex-direction: column; gap: 20px; }
+        .feature { display: flex; align-items: center; gap: 15px; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+        .feature:nth-child(1) { animation-delay: 0.2s; }
+        .feature:nth-child(2) { animation-delay: 0.35s; }
+        .feature:nth-child(3) { animation-delay: 0.5s; }
+        .feature-icon { width: 44px; height: 44px; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .feature-text strong { display: block; font-family: 'Syne', sans-serif; font-size: 0.95rem; color: var(--text-primary); }
+        .feature-text span { font-size: 0.82rem; color: var(--text-muted); }
+
+        .right-col {
+            width: 480px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 50px 50px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+        .form-header { margin-bottom: 28px; animation: fadeInUp 0.4s ease forwards; }
+        .form-header h1 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.8rem; margin-bottom: 6px; }
+        .form-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+        .flash-msg { padding: 12px 16px; border-radius: 10px; background: var(--bg-card); border-left: 4px solid var(--accent2); font-size: 0.88rem; margin-bottom: 16px; color: var(--accent2); display: flex; align-items: center; gap: 8px; }
+        .flash-msg.success { border-left-color: var(--accent3); color: var(--accent3); }
+
+        .form-group { margin-bottom: 16px; animation: fadeInUp 0.4s ease forwards; opacity: 0; }
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text-muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .input-wrap { position: relative; }
+        .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 12px 42px 12px 40px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .toggle-pw { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.85rem; transition: color 0.2s; }
+        .toggle-pw:hover { color: var(--text-accent); }
+
+        .strength-bar-wrap { margin-top: 8px; }
+        .strength-bar-bg { height: 4px; background: var(--border); border-radius: 10px; overflow: hidden; }
+        .strength-bar-fill { height: 100%; width: 0; border-radius: 10px; transition: all 0.3s; }
+        .strength-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        .btn-primary {
+            width: 100%;
+            padding: 13px 24px;
+            background: var(--gradient-main);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            box-shadow: var(--shadow-accent);
+        }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 8px 32px rgba(108,99,255,0.35); }
+        .divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 20px 0; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .auth-link { text-align: center; font-size: 0.88rem; color: var(--text-muted); }
+        .auth-link a { color: var(--text-accent); text-decoration: none; font-weight: 500; }
+        .auth-link a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .left-col { display: none; }
+            .right-col { width: 100%; padding: 40px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+
+    <div class="left-col">
+        <div class="logo">✈️ <span>SKILL PILOT</span></div>
+        <div class="tagline">Your AI tutor that adapts to you</div>
+        <div class="features">
+            <div class="feature"><div class="feature-icon">🎨</div><div class="feature-text"><strong>Adapts to your learning style</strong><span>Visual, Auditory, Reading, or Kinesthetic</span></div></div>
+            <div class="feature"><div class="feature-icon">⚡</div><div class="feature-text"><strong>Matches your learning pace</strong><span>Slow, balanced, or fast-track learning</span></div></div>
+            <div class="feature"><div class="feature-icon">🧠</div><div class="feature-text"><strong>Powered by Google Gemini AI</strong><span>State-of-the-art adaptive tutoring</span></div></div>
+        </div>
+    </div>
+
+    <div class="right-col">
+        <div class="form-header">
+            <h1>Create your account</h1>
+            <p>Join thousands of students learning smarter</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for category, message in messages %}
+            <div class="flash-msg {% if category == 'success' %}success{% endif %}">
+                {{ '✅' if category == 'success' else '⚠️' }} {{ message }}
+            </div>
+            {% endfor %}{% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/register">
+            <div class="form-group">
+                <label>Full Name</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" name="name" id="name" placeholder="Your full name" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" name="email" id="email" placeholder="you@email.com" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" name="password" id="password" placeholder="Create a password" oninput="updateStrength(this.value)" required>
+                    <button type="button" class="toggle-pw" onclick="togglePassword('password')">Show</button>
+                </div>
+                <div class="strength-bar-wrap">
+                    <div class="strength-bar-bg"><div class="strength-bar-fill" id="strength-bar"></div></div>
+                    <div class="strength-label" id="strength-label">Enter a password</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm your password" required>
+                    <button type="button" class="toggle-pw" onclick="togglePassword('confirm_password')">Show</button>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Create Account →</button>
+        </form>
+
+        <div class="divider">or</div>
+        <div class="auth-link">Already have an account? <a href="/login">Login →</a></div>
+    </div>
+
+    <script>
+        function togglePassword(id) {
+            const el = document.getElementById(id);
+            const btn = el.nextElementSibling;
+            el.type = el.type === 'password' ? 'text' : 'password';
+            btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
+        }
+        function updateStrength(pw) {
+            const bar = document.getElementById('strength-bar');
+            const label = document.getElementById('strength-label');
+            if (!pw) { bar.style.width = '0'; bar.style.background = ''; label.textContent = 'Enter a password'; return; }
+            if (pw.length < 6) { bar.style.width = '33%'; bar.style.background = '#ff6584'; label.style.color = '#ff6584'; label.textContent = '⚠️ Weak'; }
+            else if (pw.length < 10) { bar.style.width = '66%'; bar.style.background = '#f7971e'; label.style.color = '#f7971e'; label.textContent = '👌 Fair'; }
+            else { bar.style.width = '100%'; bar.style.background = '#43e97b'; label.style.color = '#43e97b'; label.textContent = '✅ Strong'; }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>429 — Too Many Requests | SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#0a0a0f; --card:#12121a; --border:#2a2a3d;
+            --warn:#f7971e; --warn2:#ffd700;
+            --text:#e8e8f0; --muted:#888899;
+            --gradient:linear-gradient(135deg,#f7971e,#ffd700);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes orb{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(247,151,30,0.4);}50%{box-shadow:0 0 0 16px rgba(247,151,30,0);}}
+        .bg-orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:0.1;animation:orb 6s ease-in-out infinite;}
+        .bg-orb.a{width:420px;height:420px;background:#f7971e;top:-80px;left:-80px;}
+        .bg-orb.b{width:300px;height:300px;background:#ffd700;bottom:-60px;right:-60px;animation-delay:3s;}
+        .container{text-align:center;padding:40px 24px;animation:fadeUp 0.5s ease forwards;position:relative;z-index:1;max-width:500px;}
+        .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:40px;opacity:0.7;}
+        .logo span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .error-num{font-family:'Syne',sans-serif;font-weight:800;font-size:7rem;line-height:1;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 4s ease-in-out infinite;margin-bottom:8px;}
+        .error-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:12px;}
+        .error-msg{color:var(--muted);font-size:1rem;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto;}
+        /* Countdown */
+        .countdown-ring{width:96px;height:96px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:pulse 2s ease infinite;}
+        .countdown-num{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        /* Study tip */
+        .tip-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--warn);border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:left;}
+        .tip-label{font-family:'Syne',sans-serif;font-size:0.75rem;color:var(--warn);font-weight:700;margin-bottom:6px;}
+        .tip-text{font-size:0.9rem;color:var(--muted);line-height:1.5;}
+        /* Btns */
+        .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+        .btn{display:inline-block;padding:11px 24px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+        .btn-outline:hover{border-color:var(--warn);color:var(--warn);}
+        .btn-fill{background:var(--gradient);color:var(--bg);box-shadow:0 4px 20px rgba(247,151,30,0.25);display:none;}
+        .btn-fill:hover{transform:scale(1.04);}
+    </style>
+</head>
+<body>
+    <div class="bg-orb a"></div>
+    <div class="bg-orb b"></div>
+    <div class="container">
+        <div class="logo">✈️ <span>SKILL PILOT</span></div>
+        <div class="error-num">429</div>
+        <div class="error-title">Slow Down! ⚡</div>
+        <p class="error-msg">You're sending too many requests. Take a breather — the AI isn't going anywhere!</p>
+
+        <div class="countdown-ring">
+            <span class="countdown-num" id="countdown">60</span>
+        </div>
+
+        <div class="tip-box">
+            <div class="tip-label">💡 Study Tip While You Wait</div>
+            <div class="tip-text" id="study-tip">Loading tip...</div>
+        </div>
+
+        <div class="btns">
+            <a href="/dashboard" class="btn btn-outline">🏠 Dashboard</a>
+            <a href="javascript:location.reload()" class="btn btn-fill" id="retry-btn">🔄 Try Again</a>
+        </div>
+    </div>
+
+    <script>
+        const TIPS = [
+            "The Pomodoro Technique: study for 25 minutes, then take a 5-minute break. Repeat 4 times for a longer break.",
+            "Active recall beats re-reading. Close your notes and try to recall key ideas from memory.",
+            "Spaced repetition: review material at increasing intervals — 1 day, 3 days, 1 week, 1 month.",
+            "Teach it to learn it. Try explaining the concept out loud as if you're teaching a friend.",
+            "Mind maps help connect ideas. Draw a central concept and branch out related topics.",
+            "Study in different locations to strengthen memory. Your brain associates context with information.",
+            "Getting enough sleep improves memory consolidation. Don't skip sleep before an exam!",
+            "Break big topics into smaller chunks. Master each chunk before moving to the next."
+        ];
+
+        // Pick random tip
+        document.getElementById('study-tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+
+        // Countdown timer
+        let secs = 60;
+        const cdEl = document.getElementById('countdown');
+        const retryBtn = document.getElementById('retry-btn');
+
+        const timer = setInterval(() => {
+            secs--;
+            cdEl.textContent = secs;
+            if (secs <= 0) {
+                clearInterval(timer);
+                cdEl.textContent = '✅';
+                retryBtn.style.display = 'inline-block';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

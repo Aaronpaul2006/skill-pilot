@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Quiz — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --text-primary:#e8e8f0;
+            --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4); --shadow-accent:0 4px 24px rgba(108,99,255,0.2);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+        .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.12;pointer-events:none;z-index:0;animation:pulse 6s ease-in-out infinite;}
+        .orb1{width:350px;height:350px;background:var(--accent);top:-80px;right:-80px;}
+        .orb2{width:300px;height:300px;background:#a78bfa;bottom:-80px;left:-80px;animation-delay:3s;}
+        @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+        .progress-header{width:100%;background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:14px 30px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:20px;}
+        .progress-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;}
+        .progress-logo span{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .progress-track{flex:1;height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+        .progress-fill{height:100%;background:var(--gradient-main);border-radius:10px;transition:width 0.4s ease;}
+        .progress-label{font-size:0.82rem;color:var(--text-muted);flex-shrink:0;font-family:'Syne',sans-serif;}
+
+        .quiz-wrap{max-width:580px;width:100%;padding:40px 24px;flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
+
+        .question-slide{display:none;animation:fadeInUp 0.35s ease forwards;}
+        .question-slide.active{display:block;}
+
+        .q-badge{display:inline-block;background:var(--accent-glow);border:1px solid var(--accent);color:var(--text-accent);border-radius:20px;padding:4px 14px;font-size:0.78rem;font-family:'Syne',sans-serif;font-weight:600;margin-bottom:16px;}
+        .q-text{font-family:'Syne',sans-serif;font-weight:600;font-size:1.15rem;margin-bottom:24px;line-height:1.5;}
+
+        .options{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+        .opt-btn{
+            background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+            padding:14px 18px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;
+            font-size:0.95rem;color:var(--text-primary);transition:all 0.2s;display:flex;align-items:center;gap:12px;
+        }
+        .opt-btn:hover{border-color:var(--accent);background:var(--accent-glow);}
+        .opt-btn.selected{background:var(--gradient-main);border-color:var(--accent);color:white;}
+        .opt-letter{width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;flex-shrink:0;}
+        .opt-btn.selected .opt-letter{background:rgba(255,255,255,0.2);}
+
+        .nav-row{display:flex;justify-content:space-between;gap:12px;}
+        .btn-back{background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text-muted);padding:11px 24px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;transition:all 0.2s;}
+        .btn-back:hover{border-color:var(--accent);color:var(--text-accent);}
+        .btn-next{background:var(--gradient-main);border:none;border-radius:10px;color:white;padding:11px 28px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;font-size:0.95rem;transition:all 0.2s;box-shadow:var(--shadow-accent);}
+        .btn-next:hover{transform:scale(1.02);}
+        .btn-next:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+        #subject-slide{display:none;animation:slideUp 0.4s ease forwards;}
+        #subject-slide.active{display:block;}
+        .subject-heading{font-family:'Syne',sans-serif;font-weight:700;font-size:1.3rem;margin-bottom:8px;}
+        .subject-sub{color:var(--text-muted);font-size:0.9rem;margin-bottom:20px;}
+        select{width:100%;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:0.95rem;transition:all 0.2s;appearance:none;cursor:pointer;margin-bottom:20px;}
+        select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+
+        @media(max-width:768px){.quiz-wrap{padding:30px 16px;}}
+    </style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="progress-header">
+    <div class="progress-logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+    <div class="progress-label" id="progress-label">Question 1 of 10</div>
+</div>
+
+<div class="quiz-wrap">
+    <form id="quiz-form" action="/onboarding/submit" method="POST">
+
+        {% for q in questions %}
+        {% set i = loop.index0 %}
+        <div class="question-slide {% if i == 0 %}active{% endif %}" id="slide-{{ i }}">
+            <div class="q-badge">Q{{ loop.index }}</div>
+            <div class="q-text">{{ q.question }}</div>
+            <div class="options">
+                {% for key, val in [('A', q.options.A), ('B', q.options.B), ('C', q.options.C), ('D', q.options.D)] %}
+                <button type="button" class="opt-btn" data-q="{{ i }}" data-qid="{{ i + 1 }}" data-val="{{ key }}" onclick="selectOpt(this)">
+                    <div class="opt-letter">{{ key }}</div>
+                    {{ val }}
+                </button>
+                {% endfor %}
+            </div>
+            <div class="nav-row">
+                <button type="button" class="btn-back" data-index="{{ i }}" {% if i == 0 %}style="visibility:hidden"{% endif %}>← Back</button>
+                {% if not loop.last %}
+                <button type="button" class="btn-next" id="next-{{ i }}" data-index="{{ i }}" data-action="next" disabled>Next →</button>
+                {% else %}
+                <button type="button" class="btn-next" id="next-{{ i }}" data-action="subject" disabled>Continue →</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div id="subject-slide" class="question-slide">
+            <div class="q-badge">Almost done!</div>
+            <div class="subject-heading">One last thing...</div>
+            <div class="subject-sub">What is your main subject focus?</div>
+            <select name="subject_focus" id="subject_select">
+                <option value="General">General</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Data Science">Data Science</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Biology">Biology</option>
+            </select>
+            <!-- Hidden inputs for answers -->
+            {% for q in questions %}
+            <input type="hidden" name="q{{ loop.index }}" id="hidden-q{{ loop.index }}" value="">
+            {% endfor %}
+            <button type="submit" class="btn-next" style="width:100%;font-size:1rem;padding:14px;">🚀 Submit Profile →</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const answers = {};
+    let currentSlide = 0;
+
+    function selectOpt(btn) {
+        const q = btn.dataset.q;
+        const qid = btn.dataset.qid;
+        const val = btn.dataset.val;
+        document.querySelectorAll(`.opt-btn[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        answers[qid] = val; // 1-based id -> value
+        document.getElementById(`next-${q}`).disabled = false;
+    }
+
+    function goNext(i) {
+        document.getElementById(`slide-${i}`).classList.remove('active');
+        const next = i + 1;
+        document.getElementById(`slide-${next}`).classList.add('active');
+        currentSlide = next;
+        updateProgress(next + 1, 10);
+    }
+
+    function showSubject() {
+        document.getElementById(`slide-9`).classList.remove('active');
+        document.getElementById('subject-slide').classList.add('active');
+        document.getElementById('progress-label').textContent = 'Almost done!';
+        document.getElementById('progress-fill').style.width = '100%';
+    }
+
+    function goBack(i) {
+        if (i === 0) return;
+        document.getElementById(`slide-${i}`).classList.remove('active');
+        const prev = i - 1;
+        document.getElementById(`slide-${prev}`).classList.add('active');
+        currentSlide = prev;
+        updateProgress(prev + 1, 10);
+    }
+
+    function updateProgress(current, total) {
+        const pct = (current / total) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-label').textContent = `Question ${Math.min(current, total)} of ${total}`;
+    }
+
+    // Delegate nav button clicks — avoids inline Jinja expressions that confuse the JS linter
+    document.getElementById('quiz-form').addEventListener('click', function(e) {
+        const back = e.target.closest('.btn-back[data-index]');
+        const next = e.target.closest('.btn-next[data-action]');
+        if (back) { goBack(parseInt(back.dataset.index, 10)); }
+        if (next) {
+            if (next.dataset.action === 'subject') { showSubject(); }
+            else { goNext(parseInt(next.dataset.index, 10)); }
+        }
+    });
+
+    document.querySelector('form').addEventListener('submit', function() {
+        for (let i = 1; i <= 10; i++) {
+            const hiddenEl = document.getElementById(`hidden-q${i}`);
+            if (hiddenEl) hiddenEl.value = answers[i] || '';
+        }
+    });
+</script>
+</body>
+</html>

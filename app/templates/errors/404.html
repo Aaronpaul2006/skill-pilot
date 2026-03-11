@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Page Not Found | SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#0a0a0f; --card:#12121a; --border:#2a2a3d;
+            --accent:#6c63ff; --accent2:#a78bfa;
+            --text:#e8e8f0; --muted:#888899;
+            --gradient:linear-gradient(135deg,#6c63ff,#a78bfa);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-16px);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes orb{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+
+        .bg-orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.12;animation:orb 6s ease-in-out infinite;}
+        .bg-orb.a{width:400px;height:400px;background:#6c63ff;top:-80px;left:-80px;animation-delay:0s;}
+        .bg-orb.b{width:300px;height:300px;background:#a78bfa;bottom:-60px;right:-60px;animation-delay:3s;}
+
+        .container{text-align:center;padding:40px 24px;animation:fadeUp 0.5s ease forwards;position:relative;z-index:1;}
+        .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:40px;opacity:0.7;}
+        .logo span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .error-num{font-family:'Syne',sans-serif;font-weight:800;font-size:7rem;line-height:1;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:float 4s ease-in-out infinite;margin-bottom:8px;}
+        .error-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:12px;}
+        .error-msg{color:var(--muted);font-size:1rem;margin-bottom:36px;max-width:360px;margin-left:auto;margin-right:auto;}
+        .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+        .btn{display:inline-block;padding:11px 24px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:600;font-size:0.9rem;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent2);}
+        .btn-fill{background:var(--gradient);color:white;box-shadow:0 4px 20px rgba(108,99,255,0.25);}
+        .btn-fill:hover{transform:scale(1.04);}
+    </style>
+</head>
+<body>
+    <div class="bg-orb a"></div>
+    <div class="bg-orb b"></div>
+    <div class="container">
+        <div class="logo">✈️ <span>SKILL PILOT</span></div>
+        <div class="error-num">404</div>
+        <div class="error-title">Page Not Found</div>
+        <p class="error-msg">Looks like this lesson doesn't exist yet! Maybe check the URL or head back somewhere safe.</p>
+        <div class="btns">
+            <a href="javascript:history.back()" class="btn btn-outline">← Go Back</a>
+            <a href="/dashboard" class="btn btn-fill">🏠 Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

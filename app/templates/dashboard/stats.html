@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+        .avatar-sm{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:white;flex-shrink:0;}
+        .sidebar-user-info .name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;}
+        .sidebar-user-info .email{font-size:0.75rem;color:var(--text-muted);}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;transition:all 0.2s;border-left:3px solid transparent;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left-color:var(--accent);}
+        .nav-link.active{color:var(--text-accent);}
+        .nav-icon{font-size:1.1rem;width:22px;}
+        .sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-muted);}
+        .main{margin-left:240px;flex:1;padding:40px;}
+        .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);text-decoration:none;font-size:0.88rem;margin-bottom:28px;transition:color 0.2s;}
+        .back-link:hover{color:var(--text-accent);}
+        .page-heading{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:28px;}
+        .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;animation:fadeInUp 0.4s ease forwards;}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:16px;padding:20px;box-shadow:var(--shadow);}
+        .stat-card:nth-child(2){border-left-color:var(--accent3);}
+        .stat-card:nth-child(3){border-left-color:var(--accent4);}
+        .stat-num{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .stat-label{color:var(--text-muted);font-size:0.82rem;margin-top:6px;}
+        .section{margin-bottom:28px;animation:fadeInUp 0.4s ease 0.1s forwards;opacity:0;}
+        .section-title{font-family:'Syne',sans-serif;font-weight:600;font-size:1.05rem;margin-bottom:14px;}
+        table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;}
+        thead tr{background:var(--bg-secondary);}
+        th{padding:14px 16px;text-align:left;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;}
+        td{padding:12px 16px;font-size:0.9rem;border-bottom:1px solid var(--border);}
+        tr:last-child td{border-bottom:none;}
+        tr:hover td{background:rgba(108,99,255,0.05);}
+        .progress-wrap{width:100%;height:6px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:4px;}
+        .progress-bar{height:100%;background:var(--gradient-main);border-radius:10px;transition:width 0.5s ease;}
+        .chat-list{display:flex;flex-direction:column;gap:10px;}
+        .msg-bubble{padding:14px 16px;border-radius:12px;font-size:0.9rem;line-height:1.6;}
+        .msg-user{background:var(--accent-glow);border:1px solid var(--accent);border-radius:12px 12px 4px 12px;margin-left:auto;max-width:70%;}
+        .msg-ai{background:var(--bg-card);border:1px solid var(--border);border-radius:12px 12px 12px 4px;max-width:75%;}
+        .msg-meta{font-size:0.75rem;color:var(--text-muted);margin-top:6px;display:flex;gap:8px;}
+        .subject-tag{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-size:0.72rem;}
+        .empty-state{text-align:center;padding:40px;color:var(--text-muted);}
+        .btn-secondary{display:inline-block;padding:9px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:600;text-decoration:none;transition:all 0.2s;}
+        .btn-secondary:hover{border-color:var(--accent);color:var(--text-accent);}
+        @media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;padding:24px 16px;}.stats-row{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="sidebar-user">
+        <div class="avatar-sm">{{ current_user.name[0].upper() }}</div>
+        <div class="sidebar-user-info">
+            <div class="name">{{ current_user.name }}</div>
+            <div class="email">{{ current_user.email }}</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/chat" class="nav-link"><span class="nav-icon">💬</span> AI Chat</a>
+        <a href="/dashboard/stats" class="nav-link active"><span class="nav-icon">📊</span> Stats</a>
+        <a href="/dashboard/profile-edit" class="nav-link"><span class="nav-icon">✏️</span> Edit Profile</a>
+        <a href="/logout" class="nav-link"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-bottom">v1.0 Beta • SKILL PILOT</div>
+</aside>
+<main class="main">
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+    <div class="page-heading">📊 Your Learning Stats</div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-num">{{ total_messages }}</div>
+            <div class="stat-label">Total Questions Asked</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num">{{ messages_by_subject|length }}</div>
+            <div class="stat-label">Subjects Explored</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num" style="font-size:1.3rem;">
+                {% if messages_by_subject %}{{ messages_by_subject[0][0] }}{% else %}—{% endif %}
+            </div>
+            <div class="stat-label">Most Active Subject</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Subject Breakdown</div>
+        {% if messages_by_subject|length > 0 %}
+        <table>
+            <thead><tr><th>Subject</th><th>Messages</th><th>Progress</th></tr></thead>
+            <tbody>
+                {% for subject, count in messages_by_subject %}
+                <tr>
+                    <td>{{ subject }}</td>
+                    <td>{{ count }}</td>
+                    <td style="width:200px;">
+                        <div class="progress-wrap">
+                            <div class="progress-bar" style="width:{{ (count / total_messages * 100)|int if total_messages > 0 else 0 }}%"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">No subject data yet.</div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Recent Activity</div>
+        {% if recent_5|length > 0 %}
+        <div class="chat-list">
+            {% for msg in recent_5 %}
+            <div class="msg-bubble {% if msg.role == 'user' %}msg-user{% else %}msg-ai{% endif %}">
+                <strong>{% if msg.role == 'user' %}🧑 You{% else %}🧠 SKILL PILOT{% endif %}</strong><br>
+                {{ msg.content }}
+                <div class="msg-meta">
+                    <span>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span class="subject-tag">{{ msg.subject }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No chat history yet.</p>
+            <a href="/chat" class="btn-secondary">💬 Go to Chat →</a>
+        </div>
+        {% endif %}
+    </div>
+</main>
+</body>
+</html>

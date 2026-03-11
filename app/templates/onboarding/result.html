@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Learning Profile — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4); --shadow-accent:0 4px 24px rgba(108,99,255,0.2);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;}
+        .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.15;pointer-events:none;z-index:0;animation:pulse 6s ease-in-out infinite;}
+        .orb1{width:400px;height:400px;background:#a78bfa;top:-100px;right:-100px;}
+        .orb2{width:300px;height:300px;background:var(--accent3);bottom:-100px;left:-80px;animation-delay:3s;}
+        @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes popIn{0%{opacity:0;transform:scale(0.8);}70%{transform:scale(1.05);}100%{opacity:1;transform:scale(1);}}
+
+        .container{max-width:700px;width:100%;text-align:center;position:relative;z-index:1;}
+        .celebration{font-size:3.5rem;margin-bottom:16px;animation:popIn 0.5s ease forwards;}
+        .main-heading{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:10px;animation:fadeInUp 0.5s ease 0.1s forwards;opacity:0;}
+        .main-heading span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .subtitle{color:var(--text-muted);font-size:0.95rem;margin-bottom:40px;animation:fadeInUp 0.5s ease 0.2s forwards;opacity:0;}
+
+        .result-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
+        .rcard{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px 20px;text-align:center;box-shadow:var(--shadow);animation:fadeInUp 0.5s ease forwards;opacity:0;}
+        .rcard:nth-child(1){animation-delay:0.3s;}
+        .rcard:nth-child(2){animation-delay:0.45s;}
+        .rcard:nth-child(3){animation-delay:0.6s;}
+        .rcard-icon{font-size:2.5rem;margin-bottom:12px;display:block;}
+        .rcard-type{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:6px;font-family:'Syne',sans-serif;}
+        .rcard-value{font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+        .rcard-desc{font-size:0.82rem;color:var(--text-muted);line-height:1.5;}
+
+        .cta-section{animation:fadeInUp 0.5s ease 0.75s forwards;opacity:0;}
+        .btn-primary{display:inline-block;padding:14px 36px;background:var(--gradient-main);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:var(--shadow-accent);margin-bottom:16px;}
+        .btn-primary:hover{transform:scale(1.03);box-shadow:0 8px 32px rgba(108,99,255,0.4);}
+        .link-secondary{display:block;color:var(--text-muted);text-decoration:none;font-size:0.88rem;}
+        .link-secondary:hover{color:var(--text-accent);}
+
+        {% set style_icons = {'visual':'🎨','auditory':'👂','reading':'📖','kinesthetic':'🤸'} %}
+        {% set pace_icons = {'slow':'🐢','medium':'⚡','fast':'🚀'} %}
+        {% set pace_titles = {'slow':'Thorough Learner','medium':'Balanced Learner','fast':'Quick Learner'} %}
+        {% set pace_advice = {'slow':'Take your time — depth over speed.','medium':'Balance depth with practice.','fast':'Challenge yourself with harder problems.'} %}
+
+        @media(max-width:768px){.result-cards{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="container">
+    <div class="celebration">🎉</div>
+    <h1 class="main-heading">Your <span>Learning Profile</span> is Ready!</h1>
+    <p class="subtitle">SKILL PILOT will now adapt every response to you</p>
+
+    <div class="result-cards">
+        <div class="rcard">
+            <span class="rcard-icon">
+                {% if profile.learning_style == 'visual' %}🎨
+                {% elif profile.learning_style == 'auditory' %}👂
+                {% elif profile.learning_style == 'reading' %}📖
+                {% else %}🤸{% endif %}
+            </span>
+            <div class="rcard-type">Learning Style</div>
+            <div class="rcard-value">{{ profile.learning_style|capitalize }}</div>
+            <div class="rcard-desc">
+                {% if profile.learning_style == 'visual' %}You learn best through diagrams, charts, and visual representations.
+                {% elif profile.learning_style == 'auditory' %}You learn best through listening, discussion, and verbal explanations.
+                {% elif profile.learning_style == 'reading' %}You learn best through reading, writing, and text-based materials.
+                {% else %}You learn best through hands-on practice and real-world applications.{% endif %}
+            </div>
+        </div>
+        <div class="rcard">
+            <span class="rcard-icon">
+                {% if profile.learning_pace == 'slow' %}🐢
+                {% elif profile.learning_pace == 'medium' %}⚡
+                {% else %}🚀{% endif %}
+            </span>
+            <div class="rcard-type">Learning Pace</div>
+            <div class="rcard-value">
+                {% if profile.learning_pace == 'slow' %}Thorough Learner
+                {% elif profile.learning_pace == 'medium' %}Balanced Learner
+                {% else %}Quick Learner{% endif %}
+            </div>
+            <div class="rcard-desc">
+                {% if profile.learning_pace == 'slow' %}Take your time. The AI will explain step-by-step with multiple examples.
+                {% elif profile.learning_pace == 'medium' %}You balance depth and speed well — the best of both worlds.
+                {% else %}You grasp concepts quickly. Expect advanced challenges and deep dives.{% endif %}
+            </div>
+        </div>
+        <div class="rcard">
+            <span class="rcard-icon">📚</span>
+            <div class="rcard-type">Subject Focus</div>
+            <div class="rcard-value">{{ profile.subject_focus }}</div>
+            <div class="rcard-desc">Your recommended topics and AI responses will center around {{ profile.subject_focus }}.</div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <a href="/dashboard" class="btn-primary">🚀 Start Learning with AI →</a>
+        <a href="/onboarding/reset" class="link-secondary">Retake Quiz</a>
+    </div>
+</div>
+</body>
+</html>
