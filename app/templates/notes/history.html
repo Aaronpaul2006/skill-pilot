@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes History - SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans', sans-serif; background:var(--bg-primary); color:var(--text-primary); display:flex; min-height:100vh; }
+        
+        .sidebar { width:240px; background:var(--bg-secondary); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; height:100vh; }
+        .sidebar-logo { padding:24px 20px; font-family:'Syne',sans-serif; font-weight:800; font-size:1.25rem; border-bottom:1px solid var(--border); }
+        .sidebar-logo span { background:var(--gradient-main); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        .nav-link { display:flex; align-items:center; gap:12px; padding:12px 20px; color:var(--text-muted); text-decoration:none; font-size:0.95rem; border-left:3px solid transparent; }
+        .nav-link:hover, .nav-link.active { background:var(--accent-glow); color:var(--text-primary); border-left-color:var(--accent); }
+        .nav-link.active { color:var(--text-accent); }
+        .nav-icon { font-size:1.2rem; width:24px; }
+        
+        .main { margin-left:240px; padding:40px; flex:1; max-width:calc(100% - 240px); }
+        
+        .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; }
+        .title { font-family:'Syne', sans-serif; font-size:2rem; font-weight:700; background:var(--gradient-main); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        
+        .btn-primary { padding:12px 24px; background:var(--gradient-main); border:none; border-radius:8px; color:white; font-family:'Syne',sans-serif; font-weight:700; text-decoration:none; transition:transform 0.2s; }
+        .btn-primary:hover { transform:translateY(-2px); }
+
+        .search-bar { width:100%; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; color:white; font-family:inherit; margin-bottom:24px; font-size:1rem; }
+        
+        .history-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px; }
+        .note-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+        .note-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .note-icon { font-size:2rem; background:var(--gradient-main); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        .note-subject { font-size:0.8rem; background:var(--bg-secondary); border:1px solid var(--border); padding:4px 10px; border-radius:20px; color:var(--text-muted); }
+        .note-title { font-family:'Syne'; font-weight:700; font-size:1.1rem; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .note-preview { color:var(--text-muted); font-size:0.9rem; flex:1; margin-bottom:16px; display:-webkit-box; -webkit-line-clamp:3; line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        
+        .note-actions { display:flex; gap:10px; }
+        .btn-view { flex:1; text-align:center; padding:8px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); text-decoration:none; font-size:0.9rem; transition:all 0.2s;}
+        .btn-view:hover { border-color:var(--accent); color:var(--text-accent); }
+        
+        .btn-del { width:40px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:var(--accent2); cursor:pointer; transition:all 0.2s;}
+        .btn-del:hover { background:var(--accent2); color:white; border-color:var(--accent2); }
+
+        .empty-state { text-align:center; padding:60px 40px; background:var(--bg-card); border:1px dashed var(--border); border-radius:16px; grid-column:1 / -1;}
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div style="padding:20px 0;">
+        <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/chat" class="nav-link"><span class="nav-icon">💬</span> AI Chat</a>
+        <a href="/scheduler" class="nav-link"><span class="nav-icon">📅</span> Planner</a>
+        <a href="/gamification" class="nav-link"><span class="nav-icon">🎮</span> Gamification Hub</a>
+        <a href="/notes" class="nav-link active"><span class="nav-icon">📄</span> My Notes</a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="header">
+        <div>
+            <h1 class="title">My Document Library</h1>
+            <p style="color:var(--text-muted); margin-top:8px;">All your uploaded PDFs and notes with AI adapted explanations.</p>
+        </div>
+        <a href="/notes" class="btn-primary">+ Upload New</a>
+    </div>
+
+    <input type="text" class="search-bar" id="searchInput" placeholder="Search by filename or subject..." onkeyup="filterNotes()">
+
+    <div class="history-grid" id="notesGrid">
+        {% if notes %}
+            {% for note in notes %}
+            <div class="note-card" data-title="{{ note.filename.lower() }}" data-subject="{{ note.subject.lower() }}">
+                <div class="note-header">
+                    <div class="note-icon">📄</div>
+                    <div class="note-subject">{{ note.subject }}</div>
+                </div>
+                <div class="note-title" title="{{ note.filename }}">{{ note.filename }}</div>
+                <div class="note-preview">{{ note.summary[:150] }}...</div>
+                
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+                    Uploaded: {{ note.uploaded_at.strftime('%Y-%m-%d') }}
+                </div>
+                
+                <div class="note-actions">
+                    <a href="/notes/view/{{ note.id }}" class="btn-view">Open AI Explanation</a>
+                    <form action="/notes/delete/{{ note.id }}" method="POST" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn-del" title="Delete">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size:3rem; margin-bottom:16px;">📂</div>
+                <h3 style="margin-bottom:8px;">Your library is empty.</h3>
+                <p style="color:var(--text-muted); margin-bottom:24px;">Upload your first document to get a tailored AI explanation.</p>
+                <a href="/notes" class="btn-primary">Upload Document</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+function filterNotes() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.note-card');
+    cards.forEach(card => {
+        const title = card.getAttribute('data-title');
+        const subject = card.getAttribute('data-subject');
+        if (title.includes(input) || subject.includes(input)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+</script>
+
+</body>
+</html>

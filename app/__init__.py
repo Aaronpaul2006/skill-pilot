@@ -33,6 +33,8 @@ def create_app():
     from app.routes.test_routes import test
     from app.routes.scheduler import scheduler as scheduler_blueprint
     from app.routes.gamification import gamification
+    from app.routes.notes import notes_bp
+    from app.routes.mindmap import mindmap_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(onboarding)
@@ -41,6 +43,8 @@ def create_app():
     app.register_blueprint(test)
     app.register_blueprint(scheduler_blueprint)
     app.register_blueprint(gamification)
+    app.register_blueprint(notes_bp)
+    app.register_blueprint(mindmap_bp)
 
     # ── Security headers ──────────────────────────────────────────────────────
     @app.after_request

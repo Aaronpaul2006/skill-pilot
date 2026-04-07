@@ -21,6 +21,8 @@ class User(db.Model, UserMixin):
     earned_badges = db.relationship('UserBadge', backref='user', lazy=True, cascade='all, delete-orphan')
     xp_events = db.relationship('XPEvent', backref='user', lazy=True, cascade='all, delete-orphan')
     challenges = db.relationship('UserChallenge', backref='user', lazy=True, cascade='all, delete-orphan')
+    notes = db.relationship('UploadedNote', backref='user', lazy=True, cascade='all, delete-orphan')
+    mindmaps = db.relationship('MindMap', backref='user', lazy=True, cascade='all, delete-orphan')
 
 class LearningProfile(db.Model):
     __tablename__ = 'learning_profiles'
@@ -148,3 +150,34 @@ class UserChallenge(db.Model):
     completed_at = db.Column(db.DateTime, nullable=True)
     assigned_date = db.Column(db.Date, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
+
+class UploadedNote(db.Model):
+    __tablename__ = 'uploaded_notes'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(10), nullable=False)
+    extracted_text = db.Column(db.Text, nullable=False)
+    subject = db.Column(db.String(100), default='General')
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    summary = db.Column(db.Text, nullable=False)
+
+class MindMap(db.Model):
+    __tablename__ = 'mindmaps'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    topic = db.Column(db.String(255), nullable=False)
+    subject = db.Column(db.String(100), default='General')
+    map_data = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    concept_statuses = db.relationship('ConceptStatus', backref='mindmap', lazy=True, cascade='all, delete-orphan')
+
+class ConceptStatus(db.Model):
+    __tablename__ = 'concept_statuses'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    mindmap_id = db.Column(db.Integer, db.ForeignKey('mindmaps.id'), nullable=False)
+    concept_name = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(20), default='not_started')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

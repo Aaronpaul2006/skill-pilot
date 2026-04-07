@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ mm.topic }} — Mind Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#22C55E; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --status-not-started:#555566; --status-in-progress:#3B82F6;
+            --status-understood:#22C55E; --status-needs-review:#EF4444;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+
+        /* ── Top Bar ────────────────────────────────────────────── */
+        .topbar{padding:12px 24px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;z-index:50;flex-shrink:0;}
+        .topbar-left{display:flex;align-items:center;gap:16px;}
+        .back-btn{text-decoration:none;color:var(--text-muted);font-size:1.4rem;transition:color 0.2s;}
+        .back-btn:hover{color:white;}
+        .topic-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;}
+        .badge-chip{font-size:0.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--border);color:var(--text-muted);background:var(--bg-primary);}
+        .topbar-right{display:flex;gap:8px;}
+        .ctrl-btn{padding:8px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);cursor:pointer;font-family:inherit;font-size:0.85rem;transition:all 0.2s;}
+        .ctrl-btn:hover{border-color:var(--accent);color:var(--text-accent);}
+        .ctrl-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--text-accent);}
+
+        /* ── Main Canvas ────────────────────────────────────────── */
+        .canvas-wrap{flex:1;position:relative;overflow:hidden;}
+        #mindmapSvg{width:100%;height:100%;background:var(--bg-primary);}
+
+        /* ── D3 Tooltip ─────────────────────────────────────────── */
+        .node-tooltip{position:absolute;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:0.85rem;max-width:260px;pointer-events:none;z-index:40;box-shadow:0 8px 30px rgba(0,0,0,0.5);display:none;}
+        .node-tooltip .tt-label{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:4px;}
+        .node-tooltip .tt-desc{color:var(--text-muted);line-height:1.4;}
+
+        /* ── Right Sidebar (concept detail) ──────────────────── */
+        .sidebar-panel{position:absolute;top:0;right:0;width:380px;height:100%;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:30;transform:translateX(100%);transition:transform 0.3s ease;display:flex;flex-direction:column;overflow:hidden;}
+        .sidebar-panel.open{transform:translateX(0);}
+        .sp-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+        .sp-close{background:none;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer;}
+        .sp-close:hover{color:white;}
+        .sp-body{flex:1;overflow-y:auto;padding:20px;}
+        .sp-body::-webkit-scrollbar{width:6px;}
+        .sp-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+        .sp-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px;}
+        .status-btn{flex:1;padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:0.8rem;font-family:inherit;text-align:center;transition:all 0.2s;}
+        .status-btn:hover{border-color:var(--accent);}
+        .status-btn.active-understood{border-color:var(--status-understood);background:rgba(34,197,94,0.1);color:var(--status-understood);}
+        .status-btn.active-review{border-color:var(--status-needs-review);background:rgba(239,68,68,0.1);color:var(--status-needs-review);}
+        .status-btn.active-progress{border-color:var(--status-in-progress);background:rgba(59,130,246,0.1);color:var(--status-in-progress);}
+        .diff-badge{display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:600;}
+        .diff-beginner{background:rgba(34,197,94,0.15);color:#22C55E;}
+        .diff-intermediate{background:rgba(251,191,36,0.15);color:#FBB024;}
+        .diff-advanced{background:rgba(239,68,68,0.15);color:#EF4444;}
+
+        .md-content h1,.md-content h2,.md-content h3{font-family:'Syne',sans-serif;color:var(--text-accent);margin:16px 0 8px;}
+        .md-content p{margin-bottom:12px;line-height:1.6;}
+        .md-content ul,.md-content ol{padding-left:20px;margin-bottom:12px;}
+        .md-content li{margin-bottom:6px;}
+        .md-content code{background:var(--bg-primary);padding:2px 4px;border-radius:4px;font-size:0.9em;}
+        .loading-notes{color:var(--text-muted);font-style:italic;padding:20px 0;}
+
+        /* ── Bottom Learning Path Strip ─────────────────────── */
+        .path-strip{background:var(--bg-secondary);border-top:1px solid var(--border);padding:12px 24px;display:none;flex-shrink:0;overflow-x:auto;white-space:nowrap;z-index:20;}
+        .path-strip.show{display:flex;align-items:center;gap:8px;}
+        .path-node{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+        .path-node:hover{border-color:var(--accent4);color:var(--accent4);}
+        .path-num{width:20px;height:20px;border-radius:50%;background:var(--accent4);color:var(--bg-primary);font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+        .path-arrow{color:var(--text-muted);font-size:0.8rem;flex-shrink:0;}
+
+        /* ── Legend ──────────────────────────────────────────── */
+        .legend{position:absolute;bottom:20px;left:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;z-index:10;font-size:0.75rem;}
+        .legend-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+        .legend-row:last-child{margin-bottom:0;}
+        .legend-dot{width:12px;height:12px;border-radius:50%;}
+    </style>
+</head>
+<body>
+
+<!-- ── Top Bar ──────────────────────────────────────────────────────────── -->
+<div class="topbar">
+    <div class="topbar-left">
+        <a href="/mindmap" class="back-btn">←</a>
+        <div>
+            <div class="topic-title">{{ mm.topic }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                {{ mm.subject }} · {{ map_data.nodes|length }} concepts · ~{{ map_data.estimated_hours|default(0) }}h
+            </div>
+        </div>
+        <span class="badge-chip">⚙️ {{ profile.learning_style|upper if profile else 'READING' }} · {{ profile.learning_pace|upper if profile else 'MEDIUM' }}</span>
+    </div>
+    <div class="topbar-right">
+        <button class="ctrl-btn" onclick="zoomIn()">➕</button>
+        <button class="ctrl-btn" onclick="zoomOut()">➖</button>
+        <button class="ctrl-btn" onclick="resetZoom()">↺ Reset</button>
+        <button class="ctrl-btn" id="pathToggle" onclick="toggleLearningPath()">🛤️ Path</button>
+        <button class="ctrl-btn" onclick="exportPng()">📥 Export</button>
+        <form action="/mindmap/regenerate/{{ mm.id }}" method="POST" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="ctrl-btn" onclick="return confirm('Regenerate this map? Current progress will be reset.')">🔄</button>
+        </form>
+    </div>
+</div>
+
+<!-- ── Canvas ───────────────────────────────────────────────────────────── -->
+<div class="canvas-wrap" id="canvasWrap">
+    <svg id="mindmapSvg"></svg>
+
+    <!-- Tooltip -->
+    <div class="node-tooltip" id="tooltip">
+        <div class="tt-label" id="ttLabel"></div>
+        <div class="tt-desc" id="ttDesc"></div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div class="sidebar-panel" id="sidePanel">
+        <div class="sp-header">
+            <div>
+                <h3 id="spTitle" style="font-family:'Syne',sans-serif;"></h3>
+                <span class="diff-badge" id="spDiff"></span>
+            </div>
+            <button class="sp-close" onclick="closeSidebar()">×</button>
+        </div>
+        <div class="sp-body">
+            <div class="loading-notes" id="spLoading">Loading AI notes...</div>
+            <div class="md-content" id="spNotes"></div>
+        </div>
+        <div class="sp-footer">
+            <button class="status-btn" data-status="in_progress" onclick="setStatus('in_progress',this)">📖 In Progress</button>
+            <button class="status-btn" data-status="understood" onclick="setStatus('understood',this)">✅ Understood</button>
+            <button class="status-btn" data-status="needs_review" onclick="setStatus('needs_review',this)">🔁 Review</button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-row"><div class="legend-dot" style="background:var(--status-not-started)"></div> Not Started</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--status-in-progress)"></div> In Progress</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--status-understood)"></div> Understood</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--status-needs-review)"></div> Needs Review</div>
+    </div>
+</div>
+
+<!-- ── Bottom Learning Path Strip ───────────────────────────────────────── -->
+<div class="path-strip" id="pathStrip"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// DATA INJECTION FROM FLASK
+// ══════════════════════════════════════════════════════════════════════════
+const MAP_DATA   = {{ map_data | tojson | safe }};
+const STATUSES   = {{ statuses | tojson | safe }};
+const MAP_ID     = {{ mm.id }};
+const CSRF_TOKEN = '{{ csrf_token }}';
+const TOPIC_NAME = '{{ mm.topic }}';
+
+// Build lookup maps
+const nodeById = {};
+MAP_DATA.nodes.forEach(n => { nodeById[n.id] = n; });
+
+// Current selected node
+let selectedNode = null;
+let pathMode = false;
+const notesCache = {};  // sessionStorage-like cache for concept notes
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATUS COLOR HELPER
+// ══════════════════════════════════════════════════════════════════════════
+function statusColor(conceptLabel) {
+    const s = STATUSES[conceptLabel] || 'not_started';
+    switch(s) {
+        case 'in_progress':  return '#3B82F6';
+        case 'understood':   return '#22C55E';
+        case 'needs_review': return '#EF4444';
+        default:             return '#555566';
+    }
+}
+
+function nodeRadius(n) {
+    if (n.type === 'root')   return 28;
+    if (n.type === 'branch') return 18;
+    return 13;
+}
+
+function nodeStroke(n) {
+    if (n.type === 'root') return '#6c63ff';
+    return '#2a2a3d';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// D3.js FORCE-DIRECTED GRAPH
+// ══════════════════════════════════════════════════════════════════════════
+const svgEl = document.getElementById('mindmapSvg');
+const width = svgEl.clientWidth;
+const height = svgEl.clientHeight;
+
+const svg = d3.select('#mindmapSvg');
+
+// Container group for zoom/pan
+const g = svg.append('g');
+
+// Zoom behavior
+const zoomBehavior = d3.zoom()
+    .scaleExtent([0.2, 4])
+    .on('zoom', (event) => { g.attr('transform', event.transform); });
+svg.call(zoomBehavior);
+
+// Build links array from edges
+const links = MAP_DATA.edges.map(e => ({
+    source: e.from,
+    to_id: e.to,
+    target: e.to,
+    relationship: e.relationship
+}));
+
+// Build nodes array
+const nodes = MAP_DATA.nodes.map(n => ({ ...n }));
+
+// Force simulation
+const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+    .force('charge', d3.forceManyBody().strength(-400))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 15));
+
+// ── Draw edges ─────────────────────────────────────────────────────────
+// Arrow marker
+svg.append('defs').append('marker')
+    .attr('id', 'arrowhead').attr('viewBox', '0 -5 10 10')
+    .attr('refX', 28).attr('refY', 0)
+    .attr('markerWidth', 6).attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path').attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#555');
+
+const link = g.append('g')
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('stroke', d => {
+        switch(d.relationship) {
+            case 'contains':   return '#444';
+            case 'leads_to':   return '#6c63ff';
+            case 'requires':   return '#ff6584';
+            case 'related_to': return '#333';
+            default:           return '#333';
+        }
+    })
+    .attr('stroke-width', d => d.relationship === 'related_to' ? 1 : 1.5)
+    .attr('stroke-dasharray', d => {
+        if (d.relationship === 'leads_to') return '6,4';
+        if (d.relationship === 'requires') return '3,3';
+        return 'none';
+    })
+    .attr('stroke-opacity', d => d.relationship === 'related_to' ? 0.4 : 0.7)
+    .attr('marker-end', d => d.relationship === 'leads_to' ? 'url(#arrowhead)' : '');
+
+// ── Draw nodes ─────────────────────────────────────────────────────────
+const node = g.append('g')
+    .selectAll('g')
+    .data(nodes)
+    .join('g')
+    .attr('class', 'node-group')
+    .call(d3.drag()
+        .on('start', dragStarted)
+        .on('drag', dragged)
+        .on('end', dragEnded));
+
+// Node circles
+node.append('circle')
+    .attr('r', d => nodeRadius(d))
+    .attr('fill', d => statusColor(d.label))
+    .attr('stroke', d => nodeStroke(d))
+    .attr('stroke-width', d => d.type === 'root' ? 3 : 1.5)
+    .attr('cursor', 'pointer')
+    .attr('class', 'node-circle');
+
+// Node labels
+node.append('text')
+    .text(d => d.label.length > 18 ? d.label.substring(0,16) + '…' : d.label)
+    .attr('dy', d => nodeRadius(d) + 16)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#aaa')
+    .attr('font-size', d => d.type === 'root' ? '0.85rem' : '0.75rem')
+    .attr('font-family', "'DM Sans', sans-serif")
+    .style('pointer-events', 'none');
+
+// Learning path badges (hidden until toggled)
+node.append('circle')
+    .attr('class', 'path-badge')
+    .attr('r', 10)
+    .attr('cx', d => nodeRadius(d) - 4)
+    .attr('cy', d => -(nodeRadius(d) - 4))
+    .attr('fill', '#f7971e')
+    .attr('stroke', '#0a0a0f')
+    .attr('stroke-width', 2)
+    .style('display', 'none');
+
+node.append('text')
+    .attr('class', 'path-badge-text')
+    .attr('x', d => nodeRadius(d) - 4)
+    .attr('y', d => -(nodeRadius(d) - 4) + 4)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#0a0a0f')
+    .attr('font-size', '0.65rem')
+    .attr('font-weight', '700')
+    .style('display', 'none')
+    .style('pointer-events', 'none');
+
+// ── Interactions ──────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+const ttLabel = document.getElementById('ttLabel');
+const ttDesc  = document.getElementById('ttDesc');
+
+node.on('mouseover', function(event, d) {
+    ttLabel.textContent = d.label;
+    ttDesc.textContent = d.description || '';
+    tooltip.style.display = 'block';
+    tooltip.style.left = (event.pageX + 16) + 'px';
+    tooltip.style.top  = (event.pageY - 10) + 'px';
+})
+.on('mousemove', function(event) {
+    tooltip.style.left = (event.pageX + 16) + 'px';
+    tooltip.style.top  = (event.pageY - 10) + 'px';
+})
+.on('mouseout', function() {
+    tooltip.style.display = 'none';
+})
+.on('click', function(event, d) {
+    event.stopPropagation();
+    openSidebar(d);
+});
+
+// Click on background to close sidebar
+svg.on('click', () => closeSidebar());
+
+// ── Tick ──────────────────────────────────────────────────────────────
+simulation.on('tick', () => {
+    link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// ── Drag ──────────────────────────────────────────────────────────────
+function dragStarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+}
+function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+function dragEnded(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null; d.fy = null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SIDEBAR — Concept Detail
+// ══════════════════════════════════════════════════════════════════════════
+function openSidebar(d) {
+    selectedNode = d;
+    document.getElementById('sidePanel').classList.add('open');
+    document.getElementById('spTitle').textContent = d.label;
+
+    const diffEl = document.getElementById('spDiff');
+    diffEl.textContent = d.difficulty || '';
+    diffEl.className = 'diff-badge diff-' + (d.difficulty || 'beginner');
+
+    document.getElementById('spNotes').innerHTML = '';
+    document.getElementById('spLoading').style.display = 'block';
+
+    // Highlight active status
+    document.querySelectorAll('.status-btn').forEach(b => b.className = 'status-btn');
+    const curStatus = STATUSES[d.label] || 'not_started';
+    const activeBtn = document.querySelector(`.status-btn[data-status="${curStatus}"]`);
+    if (activeBtn) {
+        if (curStatus === 'understood')   activeBtn.classList.add('active-understood');
+        if (curStatus === 'needs_review') activeBtn.classList.add('active-review');
+        if (curStatus === 'in_progress')  activeBtn.classList.add('active-progress');
+    }
+
+    // Load notes (check cache first)
+    if (notesCache[d.id]) {
+        document.getElementById('spLoading').style.display = 'none';
+        document.getElementById('spNotes').innerHTML = marked.parse(notesCache[d.id]);
+        return;
+    }
+
+    fetch('/mindmap/concept/notes', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken': CSRF_TOKEN},
+        body: JSON.stringify({ concept: d.label, topic: TOPIC_NAME })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('spLoading').style.display = 'none';
+        if (data.success) {
+            notesCache[d.id] = data.notes;
+            document.getElementById('spNotes').innerHTML = marked.parse(data.notes);
+        } else {
+            document.getElementById('spNotes').innerHTML = '<p style="color:var(--accent2);">Could not load notes.</p>';
+        }
+    })
+    .catch(() => {
+        document.getElementById('spLoading').style.display = 'none';
+        document.getElementById('spNotes').innerHTML = '<p style="color:var(--accent2);">Network error.</p>';
+    });
+}
+
+function closeSidebar() {
+    document.getElementById('sidePanel').classList.remove('open');
+    selectedNode = null;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATUS UPDATE
+// ══════════════════════════════════════════════════════════════════════════
+function setStatus(status, btnEl) {
+    if (!selectedNode) return;
+
+    fetch('/mindmap/concept/status', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken': CSRF_TOKEN},
+        body: JSON.stringify({ mindmap_id: MAP_ID, concept_name: selectedNode.label, status: status })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            STATUSES[selectedNode.label] = status;
+            // Update node color live
+            d3.selectAll('.node-circle')
+                .filter(d => d.id === selectedNode.id)
+                .transition().duration(300)
+                .attr('fill', statusColor(selectedNode.label));
+
+            // Highlight button
+            document.querySelectorAll('.status-btn').forEach(b => b.className = 'status-btn');
+            if (status === 'understood')   btnEl.classList.add('active-understood');
+            if (status === 'needs_review') btnEl.classList.add('active-review');
+            if (status === 'in_progress')  btnEl.classList.add('active-progress');
+        }
+    });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ZOOM CONTROLS
+// ══════════════════════════════════════════════════════════════════════════
+function zoomIn()  { svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3); }
+function zoomOut() { svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7); }
+function resetZoom() {
+    svg.transition().duration(500).call(zoomBehavior.transform, d3.zoomIdentity.translate(width/2, height/2).scale(0.8).translate(-width/2, -height/2));
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LEARNING PATH TOGGLE
+// ══════════════════════════════════════════════════════════════════════════
+function toggleLearningPath() {
+    pathMode = !pathMode;
+    const strip = document.getElementById('pathStrip');
+    const toggle = document.getElementById('pathToggle');
+
+    if (pathMode) {
+        toggle.classList.add('active');
+        // Fetch path data
+        fetch(`/mindmap/path/${MAP_ID}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) return;
+                strip.innerHTML = '';
+                strip.classList.add('show');
+
+                // Show path badges on nodes
+                const pathIds = data.path.map(p => p.id);
+                d3.selectAll('.path-badge').style('display', d => pathIds.includes(d.id) ? 'block' : 'none');
+                d3.selectAll('.path-badge-text')
+                    .style('display', d => pathIds.includes(d.id) ? 'block' : 'none')
+                    .text(d => { const idx = pathIds.indexOf(d.id); return idx >= 0 ? idx + 1 : ''; });
+
+                // Gold ring on path nodes
+                d3.selectAll('.node-circle')
+                    .attr('stroke', d => pathIds.includes(d.id) ? '#f7971e' : nodeStroke(d))
+                    .attr('stroke-width', d => pathIds.includes(d.id) ? 3 : (d.type === 'root' ? 3 : 1.5));
+
+                // Build strip
+                data.path.forEach((p, i) => {
+                    if (i > 0) {
+                        const arrow = document.createElement('span');
+                        arrow.className = 'path-arrow';
+                        arrow.textContent = '→';
+                        strip.appendChild(arrow);
+                    }
+                    const chip = document.createElement('div');
+                    chip.className = 'path-node';
+                    chip.innerHTML = `<span class="path-num">${p.order}</span> ${p.label}`;
+                    chip.onclick = () => panToNode(p.id);
+                    strip.appendChild(chip);
+                });
+            });
+    } else {
+        toggle.classList.remove('active');
+        strip.classList.remove('show');
+        // Remove path visual cues
+        d3.selectAll('.path-badge').style('display', 'none');
+        d3.selectAll('.path-badge-text').style('display', 'none');
+        d3.selectAll('.node-circle')
+            .attr('stroke', d => nodeStroke(d))
+            .attr('stroke-width', d => d.type === 'root' ? 3 : 1.5);
+    }
+}
+
+function panToNode(nodeId) {
+    const n = nodes.find(nd => nd.id === nodeId);
+    if (!n) return;
+    svg.transition().duration(600).call(
+        zoomBehavior.transform,
+        d3.zoomIdentity.translate(width/2 - n.x, height/2 - n.y).scale(1.2)
+    );
+    openSidebar(n);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPORT AS PNG
+// ══════════════════════════════════════════════════════════════════════════
+function exportPng() {
+    const svgNode = document.getElementById('mindmapSvg');
+    domtoimage.toPng(svgNode, { bgcolor: '#0a0a0f' })
+        .then(dataUrl => {
+            const a = document.createElement('a');
+            a.download = `mindmap_${TOPIC_NAME.replace(/\s+/g,'_')}.png`;
+            a.href = dataUrl;
+            a.click();
+        })
+        .catch(err => {
+            console.error('Export error:', err);
+            alert('Could not export. Try using a screenshot instead.');
+        });
+}
+</script>
+
+</body>
+</html>

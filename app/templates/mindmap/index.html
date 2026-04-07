@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Maps — SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes spin{to{transform:rotate(360deg);}}
+
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;}
+        .sidebar-logo{padding:24px 20px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--text-muted);text-decoration:none;font-size:0.95rem;border-left:3px solid transparent;transition:all 0.2s;}
+        .nav-link:hover,.nav-link.active{background:var(--accent-glow);color:var(--text-primary);border-left-color:var(--accent);}
+        .nav-link.active{color:var(--text-accent);}
+        .nav-icon{font-size:1.2rem;width:24px;}
+
+        .main{margin-left:240px;padding:40px;flex:1;max-width:calc(100% - 240px);}
+
+        .header{margin-bottom:32px;animation:fadeInUp 0.4s;}
+        .title{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .subtitle{color:var(--text-muted);margin-top:8px;}
+
+        .gen-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:36px;box-shadow:var(--shadow);margin-bottom:40px;animation:fadeInUp 0.5s;}
+        .form-group{margin-bottom:20px;}
+        .form-label{display:block;color:var(--text-muted);font-size:0.9rem;margin-bottom:8px;}
+        .form-input,.form-select{width:100%;padding:14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;color:white;font-family:inherit;font-size:1rem;outline:none;transition:border 0.2s;}
+        .form-input:focus,.form-select:focus{border-color:var(--accent);}
+        .btn-gen{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:var(--gradient-main);border:none;border-radius:10px;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(108,99,255,0.3);}
+        .btn-gen:hover{transform:translateY(-2px);}
+        .btn-gen:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+        .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;display:none;}
+
+        .section-title{font-family:'Syne',sans-serif;font-size:1.3rem;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+        .saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+        .map-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;transition:all 0.2s;display:flex;flex-direction:column;}
+        .map-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--shadow);}
+        .map-topic{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;color:var(--text-accent);}
+        .map-meta{font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;display:flex;gap:12px;}
+        .map-actions{display:flex;gap:10px;margin-top:auto;}
+        .btn-sm{flex:1;text-align:center;padding:8px;border-radius:8px;text-decoration:none;font-size:0.9rem;transition:all 0.2s;}
+        .btn-view{background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);}
+        .btn-view:hover{border-color:var(--accent);color:var(--text-accent);}
+        .btn-del{background:transparent;border:1px solid var(--border);color:var(--accent2);cursor:pointer;font-family:inherit;}
+        .btn-del:hover{background:var(--accent2);color:white;border-color:var(--accent2);}
+
+        .flash-msg{padding:12px 16px;border-radius:10px;background:var(--bg-card);border-left:4px solid var(--accent3);font-size:0.88rem;margin-bottom:20px;color:var(--accent3);}
+        .flash-msg.error{border-left-color:var(--accent2);color:var(--accent2);}
+
+        .empty-state{text-align:center;padding:60px;background:var(--bg-card);border:1px dashed var(--border);border-radius:16px;color:var(--text-muted);grid-column:1/-1;}
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div style="padding:20px 0;">
+        <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/chat" class="nav-link"><span class="nav-icon">💬</span> AI Chat</a>
+        <a href="/notes" class="nav-link"><span class="nav-icon">📄</span> My Notes</a>
+        <a href="/mindmap" class="nav-link active"><span class="nav-icon">🗺️</span> Mind Maps</a>
+        <a href="/scheduler" class="nav-link"><span class="nav-icon">📅</span> Planner</a>
+        <a href="/gamification" class="nav-link"><span class="nav-icon">🎮</span> Gamification</a>
+    </div>
+</aside>
+
+<main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="flash-msg {% if category == 'error' %}error{% endif %}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="header">
+        <h1 class="title">🗺️ Concept Mind Maps</h1>
+        <p class="subtitle">Enter any topic and let AI generate an interactive visual knowledge graph tailored to your learning style.</p>
+    </div>
+
+    <div class="gen-card">
+        <form action="/mindmap/generate" method="POST" id="genForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+                <div class="form-group">
+                    <label class="form-label">Topic / Subject Area</label>
+                    <input type="text" name="topic" class="form-input" maxlength="100" required placeholder="e.g. Data Structures, Thermodynamics, Machine Learning">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject Tag</label>
+                    <select name="subject" class="form-select">
+                        <option value="General">General</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="History">History</option>
+                        <option value="Literature">Literature</option>
+                        <option value="Economics">Economics</option>
+                        <option value="Business">Business</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-gen" id="genBtn">
+                <span id="btnLabel">🧠 Generate Mind Map</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+    </div>
+
+    {% if saved_maps %}
+    <div class="section-title">
+        <span>📂 Recent Mind Maps</span>
+        <a href="/mindmap/history" style="color:var(--text-accent);text-decoration:none;font-size:0.9rem;">View All →</a>
+    </div>
+    <div class="saved-grid">
+        {% for m in saved_maps %}
+        <div class="map-card">
+            <div class="map-topic">{{ m.topic }}</div>
+            <div class="map-meta">
+                <span>{{ m.subject }}</span>
+                <span>{{ m.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+            <div class="map-actions">
+                <a href="/mindmap/view/{{ m.id }}" class="btn-sm btn-view">Open Map</a>
+                <form action="/mindmap/delete/{{ m.id }}" method="POST" style="flex:0 0 auto;" onsubmit="return confirm('Delete this mind map?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn-sm btn-del">🗑️</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="saved-grid">
+        <div class="empty-state">
+            <div style="font-size:3rem;margin-bottom:16px;">🗺️</div>
+            <p>No mind maps yet. Generate your first one above!</p>
+        </div>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+document.getElementById('genForm').onsubmit = function(){
+    document.getElementById('genBtn').disabled = true;
+    document.getElementById('btnLabel').textContent = 'Generating with AI...';
+    document.getElementById('spinner').style.display = 'inline-block';
+};
+</script>
+
+</body>
+</html>

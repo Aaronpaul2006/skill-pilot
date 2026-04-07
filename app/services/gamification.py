@@ -392,7 +392,21 @@ class GamificationService:
     def get_player_stats(user_id):
         """Aggregates player stat profile."""
         p = PlayerProfile.query.filter_by(user_id=user_id).first()
-        if not p: return {}
+        if not p:
+            return {
+                "level": 1,
+                "rank": "Scholar",
+                "xp_total": 0,
+                "xp_current_level": 0,
+                "xp_to_next_level": 100,
+                "level_progress_pct": 0,
+                "streak_current": 0,
+                "streak_longest": 0,
+                "badges_earned_count": 0,
+                "recent_badges": [],
+                "total_messages": 0,
+                "total_sessions": 0
+            }
         
         next_threshold = LEVEL_THRESHOLDS.get(p.level + 1, {}).get("xp", 999999)
         current_base = LEVEL_THRESHOLDS.get(p.level, {}).get("xp", 0)
