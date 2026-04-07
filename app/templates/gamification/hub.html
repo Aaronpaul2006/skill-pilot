@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamification Hub — SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+        .avatar-sm{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:white;}
+        .sidebar-user-info .name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;}
+        .sidebar-user-info .email{font-size:0.75rem;color:var(--text-muted);}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left:2px solid var(--accent);}
+        
+        .main{margin-left:240px;flex:1;padding:30px; display:grid; grid-template-columns: 2fr 1fr; gap:30px; animation:fadeInUp 0.4s;}
+        
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
+        .card-title { font-family:'Syne', sans-serif; font-weight:700; font-size:1.2rem; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:10px; }
+        
+        /* Level Card */
+        .level-circle { width:100px; height:100px; border-radius:50%; background:var(--bg-secondary); border:4px solid var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .level-num { font-size:2.5rem; font-family:'Syne',sans-serif; font-weight:800; line-height:1; }
+        .progress-bar-container { width:100%; height:10px; background:var(--bg-secondary); border-radius:5px; margin-top:14px; overflow:hidden;}
+        .progress-bar-fill { height:100%; background:var(--gradient-main); width:{{ stats.level_progress_pct }}%; }
+        
+        /* Streak Card */
+        .streak-em { font-size:3rem; margin-right:20px;}
+        
+        /* Stats Grid */
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;}
+        .mini-stat { background:var(--bg-secondary); padding:16px; border-radius:12px; border:1px solid var(--border); text-align:center;}
+        
+        .badge-icon { font-size:2rem; }
+        
+        /* Leaderboard */
+        .lb-row { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border); }
+        .lb-row.highlight { background:var(--accent-glow); border-left:3px solid var(--accent); }
+        
+        .btn-secondary { padding:8px 16px; border:1px solid var(--accent); color:var(--text-accent); text-decoration:none; border-radius:8px; display:inline-block; margin-top:10px; }
+        
+        /* Challenges */
+        .challenge-card { background:var(--bg-secondary); padding:16px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border); }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="sidebar-user">
+        <div class="avatar-sm">{{ current_user.name[0].upper() }}</div>
+        <div class="sidebar-user-info">
+            <div class="name">{{ current_user.name }}</div>
+            <div class="email">Level {{ stats.level }}</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link">🏠 Dashboard</a>
+        <a href="/gamification" class="nav-link active">🎮 Gamification Hub</a>
+        <a href="/gamification/badges" class="nav-link">🏅 Badges</a>
+        <a href="/gamification/leaderboard" class="nav-link">🏆 Leaderboard</a>
+    </nav>
+</aside>
+
+<main class="main" style="display:flex; flex-direction:column; max-width: 1200px; margin: 0 auto; margin-left: 240px;">
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:30px; width:100%;">
+        
+        <!-- LEFT COL -->
+        <div>
+            <div class="card" style="display:flex; gap:30px; align-items:center; border-left:4px solid var(--accent);">
+                <div class="level-circle">
+                    <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Level</span>
+                    <span class="level-num">{{ stats.level }}</span>
+                </div>
+                <div style="flex:1;">
+                    <h2 style="font-family:'Syne',sans-serif; color:var(--text-accent); font-size:1.8rem;">{{ stats.rank }}</h2>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">{{ stats.xp_current_level }} / {{ stats.xp_current_level + stats.xp_to_next_level }} XP to next level</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="display:flex; align-items:center; border-left:4px solid var(--accent4);">
+                <div class="streak-em">🔥</div>
+                <div>
+                    <h3 style="font-family:'Syne',sans-serif;">{{ stats.streak_current }} Day Streak</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">Your longest streak is {{ stats.streak_longest }} days. Keep it up!</p>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="mini-stat">
+                    <div style="font-size:1.8rem; font-weight:800; font-family:'Syne',sans-serif; color:white;">{{ stats.xp_total }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Total XP</div>
+                </div>
+                <div class="mini-stat">
+                    <div style="font-size:1.8rem; font-weight:800; font-family:'Syne',sans-serif; color:white;">{{ stats.total_messages }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Messages</div>
+                </div>
+                <div class="mini-stat">
+                    <div style="font-size:1.8rem; font-weight:800; font-family:'Syne',sans-serif; color:white;">{{ stats.total_sessions }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Sessions</div>
+                </div>
+                <div class="mini-stat">
+                    <div style="font-size:1.8rem; font-weight:800; font-family:'Syne',sans-serif; color:var(--accent3);">{{ stats.badges_earned_count }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Badges</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">🏅 Recent Badges</div>
+                {% if stats.recent_badges %}
+                <div style="display:flex; gap:16px;">
+                    {% for b in stats.recent_badges %}
+                    <div style="text-align:center; flex:1; background:var(--bg-secondary); padding:10px; border-radius:12px; border:1px solid var(--border);">
+                        <div class="badge-icon">{{ b.emoji }}</div>
+                        <div style="font-size:0.85rem; margin-top:8px;">{{ b.name }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color:var(--text-muted); font-size:0.9rem;">No badges earned yet.</p>
+                {% endif %}
+                <a href="/gamification/badges" class="btn-secondary">View All Badges</a>
+            </div>
+            
+        </div>
+        
+        <!-- RIGHT COL -->
+        <div>
+            <div class="card">
+                <div class="card-title">🏆 Weekly Leaderboard</div>
+                <div style="display:flex; flex-direction:column;">
+                    {% for row in leaderboard %}
+                    <div class="lb-row {% if row.user_id == current_user.id %}highlight{% endif %}">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="font-weight:700; width:20px;">
+                                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+                            </div>
+                            <div>
+                                <div style="font-size:0.9rem;">{{ row.name }}</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">Level {{ row.level }} - {{ row.rank_title }}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700; color:var(--text-accent);">{{ row.xp }} XP</div>
+                    </div>
+                    {% endfor %}
+                    {% if not user_in_top %}
+                    <div class="lb-row highlight" style="margin-top:10px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="font-weight:700; width:20px;">-</div>
+                            <div>
+                                <div style="font-size:0.9rem;">{{ current_user.name }} (You)</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">Level {{ stats.level }}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:700; color:var(--text-accent);">Unranked</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <a href="/gamification/leaderboard" class="btn-secondary" style="width:100%; text-align:center;">Full Leaderboard</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">🎯 Active Challenges</div>
+                {% if active_challenges %}
+                    {% for uc in active_challenges %}
+                    <div class="challenge-card">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <strong style="font-size:0.95rem;">{{ uc.challenge_ref.title }}</strong>
+                            <span style="font-size:0.8rem; background:rgba(67, 233, 123, 0.2); color:var(--accent3); padding:2px 8px; border-radius:12px; font-weight:600;">+{{ uc.challenge_ref.xp_reward }} XP</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:10px;">{{ uc.challenge_ref.description }}</p>
+                        <div class="progress-bar-container" style="height:6px; margin-top:0;">
+                            <div class="progress-bar-fill" style="width:{{ (uc.progress / uc.goal * 100) }}%; background:var(--accent4);"></div>
+                        </div>
+                        <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;">{{ uc.progress }} / {{ uc.goal }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:var(--text-muted); font-size:0.9rem;">No active challenges right now.</p>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

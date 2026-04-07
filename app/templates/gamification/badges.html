@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badges — SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left:2px solid var(--accent);}
+        
+        .main{margin-left:240px;flex:1;padding:30px; max-width:1200px; margin: 0 auto; margin-left:240px;}
+        
+        .topbar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px; border-bottom:1px solid var(--border); padding-bottom:20px;}
+        .greeting{font-family:'Syne',sans-serif;font-weight:700;font-size:2rem;}
+        
+        .badges-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; }
+        
+        .badge-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:20px; text-align:center; transition:all 0.3s; position:relative; overflow:hidden;}
+        .badge-card:hover { transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--accent); }
+        .badge-card.unearned { filter:grayscale(1) opacity(0.5); }
+        .badge-card.unearned:hover { filter:grayscale(0.5) opacity(0.8); }
+        
+        .badge-emoji { font-size:3rem; margin-bottom:12px; display:inline-block;}
+        .badge-name { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; margin-bottom:6px; }
+        .badge-desc { font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; min-height:40px; }
+        
+        .rarity-tag { display:inline-block; padding:4px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; text-transform:uppercase; font-family:'Syne',sans-serif; }
+        .rarity-common { background:rgba(255,255,255,0.1); color:#ccc; border:1px solid #666; }
+        .rarity-rare { background:rgba(108,99,255,0.1); color:var(--accent); border:1px solid var(--accent); }
+        .rarity-epic { background:rgba(255,101,132,0.1); color:var(--accent2); border:1px solid var(--accent2); }
+        .rarity-legendary { background:rgba(247,151,30,0.1); color:var(--accent4); border:1px solid var(--accent4); }
+        
+        .xp-reward { font-size:0.8rem; font-weight:700; color:var(--accent3); margin-top:10px; display:block; }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link">🏠 Dashboard</a>
+        <a href="/gamification" class="nav-link">🎮 Gamification Hub</a>
+        <a href="/gamification/badges" class="nav-link active">🏅 Badges</a>
+        <a href="/gamification/leaderboard" class="nav-link">🏆 Leaderboard</a>
+    </nav>
+</aside>
+
+<main class="main">
+    <div class="topbar">
+        <div>
+            <div class="greeting">Badge Collection</div>
+            <p style="color:var(--text-muted); font-size:1rem; margin-top:5px;">Earn badges by studying, chatting, and keeping your streaks alive.</p>
+        </div>
+        <div style="font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text-accent);">
+            {{ earned }} / {{ total }} Earned
+        </div>
+    </div>
+    
+    <div class="badges-grid">
+        {% for b in badges %}
+        <div class="badge-card {% if not b.earned %}unearned{% endif %}">
+            <div class="badge-emoji">{{ b.emoji }}</div>
+            <div class="badge-name">{{ b.name }}</div>
+            <div class="badge-desc">{% if b.earned %}{{ b.description }}{% else %}???{% endif %}</div>
+            <div class="rarity-tag rarity-{{ b.rarity }}">{{ b.rarity }}</div>
+            <span class="xp-reward">+{{ b.xp_reward }} XP</span>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+</body>
+</html>

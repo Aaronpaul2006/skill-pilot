@@ -3,7 +3,8 @@ import html
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, bcrypt, limiter
-from app.models import User, LearningProfile
+from app.models import User, LearningProfile, PlayerProfile
+from app.services.gamification import GamificationService as GS
 
 auth = Blueprint('auth', __name__)
 
@@ -71,6 +72,10 @@ def register():
 
             profile = LearningProfile(user_id=user.id)
             db.session.add(profile)
+            
+            player = PlayerProfile(user_id=user.id)
+            db.session.add(player)
+            
             db.session.commit()
 
             flash("Account created! Please complete your learning profile.", "success")
@@ -105,6 +110,19 @@ def login():
             if user and bcrypt.check_password_hash(user.password, password):
                 session['login_attempts'] = 0   # reset on success
                 login_user(user)
+                
+                # Gamification Daily Login & Challenge Assign
+                GS.assign_daily_challenges(user.id)
+                if datetime.utcnow().weekday() == 0:
+                    GS.assign_weekly_challenges(user.id)
+                    
+                import datetime as dt    
+                today = dt.date.today()
+                player = PlayerProfile.query.filter_by(user_id=user.id).first()
+                if player and player.last_activity_date != today:
+                    GS.award_xp(user.id, "daily_login", 10, "Daily login bonus")
+                    GS.update_streak(user.id)
+
                 flash(f"Welcome back, {user.name}!", "success")
 
                 if user.learning_profile and user.learning_profile.onboarding_done:

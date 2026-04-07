@@ -3,7 +3,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 import google.generativeai as genai
 from app import db, limiter
-from app.models import ChatMessage, LearningProfile
+from app.models import ChatMessage, LearningProfile, PlayerProfile
+from app.services.gamification import GamificationService as GS
 from config import Config
 from datetime import datetime
 
@@ -128,6 +129,11 @@ def send():
     db.session.add(user_msg_db)
     db.session.commit()
     
+    player = PlayerProfile.query.filter_by(user_id=current_user.id).first()
+    if player:
+        player.total_chat_messages += 1
+        db.session.commit()
+    
     detect_and_update_pace(user_message, profile)
     db.session.refresh(profile)
     
@@ -165,13 +171,33 @@ def send():
         db.session.add(ai_msg_db)
         db.session.commit()
         
+        # GAMIFICATION LOGIC
+        xp_result = GS.award_xp(current_user.id, "chat_message", 5, "Sent a chat message")
+        streak_result = GS.update_streak(current_user.id)
+        
+        player_now = PlayerProfile.query.filter_by(user_id=current_user.id).first()
+        msgs_count = player_now.total_chat_messages if player_now else 0
+        new_badges = GS.check_and_award_badges(current_user.id, "chat_message", {"message_count": msgs_count})
+        
+        completed_challenges = GS.update_challenge_progress(current_user.id, "chat_messages")
+        GS.assign_daily_challenges(current_user.id)
+        
         return jsonify({
             'response': ai_response,
             'learning_style': profile.learning_style,
             'learning_pace': profile.learning_pace,
             'subject': subject,
             'slow_signals': profile.slow_signals,
-            'fast_signals': profile.fast_signals
+            'fast_signals': profile.fast_signals,
+            'gamification': {
+                 "xp_awarded": xp_result["xp_awarded"] if xp_result else 5,
+                 "leveled_up": xp_result["leveled_up"] if xp_result else False,
+                 "new_level": xp_result.get("new_level") if xp_result else 1,
+                 "new_rank": xp_result.get("new_rank") if xp_result else "",
+                 "new_badges": new_badges,
+                 "completed_challenges": completed_challenges,
+                 "streak": streak_result["streak_current"] if streak_result else 1
+            }
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

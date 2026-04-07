@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Details — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4); --shadow-accent:0 4px 24px rgba(108,99,255,0.2);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;transition:transform 0.3s;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+        .avatar-sm{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:white;flex-shrink:0;}
+        .sidebar-user-info .name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+        .sidebar-user-info .email{font-size:0.75rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;transition:all 0.2s;border-left:3px solid transparent;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left-color:var(--accent);}
+        .nav-link.active{color:var(--text-accent);}
+        .nav-icon{font-size:1.1rem;width:22px;flex-shrink:0;}
+        .sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-muted);}
+
+        .main{margin-left:240px;flex:1;padding:30px;max-width:calc(100% - 240px); overflow-x:hidden;}
+        .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;animation:fadeInUp 0.4s ease forwards;}
+        .greeting{font-family:'Syne',sans-serif;font-weight:700;font-size:1.8rem; margin-bottom:5px;}
+        
+        .flash-msg{padding:12px 16px;border-radius:10px;background:var(--bg-card);border-left:4px solid var(--accent3);font-size:0.88rem;margin-bottom:20px;color:var(--accent3);}
+        .flash-msg.error{border-left-color:var(--accent2);color:var(--accent2);}
+        .flash-msg.warning{border-left-color:var(--accent4);color:var(--accent4);}
+        .flash-msg.info{border-left-color:var(--accent);color:var(--text-accent);}
+
+        .btn-primary-sm{display:inline-block;padding:8px 16px;background:var(--gradient-main);border:none;border-radius:8px;color:white;font-family:'Syne',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+        .btn-primary-sm:hover{transform:scale(1.03);}
+        .btn-secondary{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;}
+        .btn-secondary:hover{border-color:var(--accent);color:var(--text-accent);}
+
+        .tabs { display:flex; gap:20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+        .tab-btn { background:none; border:none; color:var(--text-muted); padding:10px 15px; font-family:'Syne',sans-serif; font-size:1rem; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;}
+        .tab-btn.active { color:var(--text-accent); border-bottom-color:var(--accent); font-weight:700; }
+        
+        .tab-content { display:none; animation:fadeInUp 0.3s ease; }
+        .tab-content.active { display:block; }
+        
+        .timeline-day { border-left:2px solid var(--border); margin-left:14px; padding-left:24px; position:relative; margin-bottom:28px; }
+        .timeline-day.today { border-left-color:var(--accent); }
+        .timeline-date-bubble { position:absolute; left:-14px; top:0; width:26px; height:26px; border-radius:50%; background:var(--bg-secondary); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.8rem; }
+        .timeline-day.today .timeline-date-bubble { border-color:var(--accent); background:var(--accent-glow); color:var(--text-accent); box-shadow:0 0 10px var(--accent-glow); }
+        .timeline-day.past .timeline-date-bubble { border-color:var(--accent3); color:var(--accent3); }
+
+        .session-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start; transition:all 0.3s; }
+        .session-card:hover { border-color:rgba(108,99,255,0.4); box-shadow:var(--shadow); }
+        .session-card.completed { opacity:0.65; border-color:var(--accent3); }
+        .session-card.completed .session-title { text-decoration:line-through; color:var(--text-muted); }
+
+        .badge{display:inline-flex;align-items:center;gap:5px;background:var(--accent-glow);border:1px solid var(--accent);color:var(--text-accent);border-radius:20px;padding:4px 10px;font-size:0.75rem;font-weight:600;}
+        .badge.warning{background:rgba(247,151,30,0.1);border-color:var(--accent4);color:var(--accent4);}
+        .badge.cram{background:rgba(255,101,132,0.1);border-color:var(--accent2);color:var(--accent2);}
+
+        .progress-ring { width: 140px; height: 140px; transform:rotate(-90deg); }
+        .progress-ring__circle { stroke: var(--accent); stroke-dasharray: 377; stroke-dashoffset: calc(377 - (377 * var(--percent)) / 100); transition: stroke-dashoffset 1s ease-in-out; }
+    </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="sidebar-user">
+        <div class="avatar-sm">{{ current_user.name[0].upper() }}</div>
+        <div class="sidebar-user-info">
+            <div class="name">{{ current_user.name }}</div>
+            <div class="email">{{ current_user.email }}</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/chat" class="nav-link"><span class="nav-icon">💬</span> AI Chat</a>
+        <a href="/scheduler" class="nav-link active"><span class="nav-icon">📅</span> Planner</a>
+    </nav>
+    <div style="padding:16px 20px; display:flex; gap:10px;">
+        <a href="/scheduler" style="color:var(--text-muted); font-size:0.85rem; text-decoration:none;">&larr; Back to Plans</a>
+    </div>
+</aside>
+
+<main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="flash-msg {% if category %} {{ category }} {% endif %}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    {% if missed_count > 0 %}
+    <div class="flash-msg warning" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <strong>⚠️ You are behind schedule.</strong> You have {{ missed_count }} uncompleted study sessions from past days.
+        </div>
+        <form action="/scheduler/{{ plan.id }}/regenerate" method="POST" onsubmit="this.querySelector('button').textContent='Regenerating...'; this.querySelector('button').disabled=true;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="btn-primary-sm" style="background:var(--accent4);">Regenerate Plan</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="topbar">
+        <div>
+            <div class="greeting">{{ plan.exam_name }}</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+                <span class="badge">📅 {{ days_remaining }} days left</span>
+                <span class="badge warning">🎯 {{ plan_data.get('estimated_readiness', '85%') }} Est. Readiness</span>
+                {% if plan.is_cram_mode %}
+                <span class="badge cram">⚡ CRAM MODE</span>
+                {% endif %}
+            </div>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-top:8px; font-style:italic; max-width:600px;">
+                "{{ plan_data.get('overview', 'Your AI-generated journey to success.') }}"
+            </p>
+        </div>
+        <div>
+            <button onclick="deletePlan()" class="btn-secondary" style="color:var(--accent2); border-color:var(--border);">🗑️ Delete Plan</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this, 'timeline-tab')">Daily Schedule</button>
+        <button class="tab-btn" onclick="switchTab(this, 'progress-tab')">Progress Stats</button>
+    </div>
+
+    <div id="timeline-tab" class="tab-content active">
+        <div style="max-width:800px;">
+            {% for day in days_list %}
+            {% set is_today = (day.date == today_str) %}
+            {% set is_past = (day.date < today_str) %}
+            
+            <div class="timeline-day {% if is_today %}today{% elif is_past %}past{% endif %}">
+                <div class="timeline-date-bubble">
+                    {% if is_past %}✓{% elif is_today %}📍{% else %}•{% endif %}
+                </div>
+                
+                <div style="margin-bottom:12px; display:flex; align-items:baseline; gap:10px;">
+                    <h3 style="font-size:1.1rem; color:{% if is_today %}var(--text-accent){% else %}white{% endif %};">{{ day.date_obj.strftime('%A, %b %d') }}</h3>
+                    {% if is_today %}<span style="font-size:0.75rem; color:var(--text-accent); font-weight:700;">TODAY</span>{% endif %}
+                </div>
+
+                {% for session in day.sessions %}
+                <div class="session-card {% if session.is_completed %}completed{% endif %}" id="session-{{ session.id }}">
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <strong class="session-title" style="font-size:1rem;">{{ session.topic }}</strong>
+                            <span style="font-size:0.75rem; color:var(--text-muted); background:var(--bg-secondary); padding:2px 8px; border-radius:10px;">{{ session.duration_hours }}h</span>
+                        </div>
+                        {% for pt_day in plan_data.get('daily_sessions', []) %}
+                            {% if pt_day.get('date') == day.date %}
+                                {% for pt_sess in pt_day.get('sessions', []) %}
+                                    {% if pt_sess.get('topic') == session.topic and not session.is_completed %}
+                                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">💡 {{ pt_sess.get('tips', '') }}</div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div>
+                        {% if not session.is_completed %}
+                        <button class="btn-primary-sm" onclick="markComplete({{ session.id }}, this)">Mark Complete</button>
+                        {% else %}
+                        <span style="color:var(--accent3); font-weight:700; font-size:0.9rem;">✓ Done</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="progress-tab" class="tab-content">
+        <div style="display:flex; gap:30px; flex-wrap:wrap; margin-bottom:30px;">
+            <div style="background:var(--bg-card); padding:30px; border-radius:16px; border:1px solid var(--border); display:flex; align-items:center; gap:30px; flex:1; min-width:300px;">
+                <div style="position:relative; width:140px; height:140px;">
+                    <svg class="progress-ring">
+                        <circle cx="70" cy="70" r="60" fill="transparent" stroke="var(--bg-secondary)" stroke-width="12"></circle>
+                        <circle class="progress-ring__circle" cx="70" cy="70" r="60" fill="transparent" stroke-width="12" style="--percent: {{ progress }};"></circle>
+                    </svg>
+                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; transform:none;">{{ progress }}%</div>
+                </div>
+                <div>
+                    <h3 style="font-family:'Syne',sans-serif; margin-bottom:8px;">Plan Completion</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">You have finished {{ progress }}% of your assigned sessions. Stick to the plan to boost your readiness to {{ plan_data.get('estimated_readiness', '100%') }}!</p>
+                </div>
+            </div>
+            
+            <div style="background:var(--bg-card); padding:30px; border-radius:16px; border:1px solid var(--border); flex:2; min-width:300px;" id="topicsChartContainer">
+                <h3 style="font-family:'Syne',sans-serif; margin-bottom:16px;">Topic Coverage Breakdown</h3>
+                <div id="topicsBars" style="display:flex; flex-direction:column; gap:12px;">
+                    <!-- Injected via fetch -->
+                    <div style="color:var(--text-muted); font-style:italic; font-size:0.85rem;">Loading data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    function switchTab(btn, tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        
+        if (tabId === 'progress-tab' && document.getElementById('topicsBars').innerHTML.includes('Loading')) {
+            loadProgressData();
+        }
+    }
+
+    function loadProgressData() {
+        fetch(`/scheduler/{{ plan.id }}/progress`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('topicsBars');
+                container.innerHTML = '';
+                const topics = data.topics;
+                for (const [topic, info] of Object.entries(topics)) {
+                    let pct = info.total > 0 ? (info.completed / info.total) * 100 : 0;
+                    container.innerHTML += `
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                                <span>${topic}</span>
+                                <span>${info.completed} / ${info.total} hrs</span>
+                            </div>
+                            <div style="width:100%; height:8px; background:var(--bg-secondary); border-radius:4px; overflow:hidden;">
+                                <div style="height:100%; width:${pct}%; background:var(--accent); transition:width 0.5s;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+    }
+
+    function markComplete(sessionId, btnElement) {
+        btnElement.textContent = '...';
+        btnElement.disabled = true;
+        
+        fetch(`/scheduler/{{ plan.id }}/complete-session`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ session_id: sessionId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                const card = document.getElementById('session-' + sessionId);
+                card.classList.add('completed');
+                btnElement.outerHTML = '<span style="color:var(--accent3); font-weight:700; font-size:0.9rem;">✓ Done</span>';
+            } else {
+                alert(data.message);
+                btnElement.textContent = 'Mark Complete';
+                btnElement.disabled = false;
+            }
+        });
+    }
+
+    function deletePlan() {
+        if(confirm("Are you sure you want to delete this study plan entirely? This action cannot be undone.")) {
+            fetch(`/scheduler/{{ plan.id }}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.href = '/scheduler';
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

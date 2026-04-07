@@ -31,12 +31,16 @@ def create_app():
     from app.routes.dashboard import dashboard
     from app.routes.chatbot import chatbot
     from app.routes.test_routes import test
+    from app.routes.scheduler import scheduler as scheduler_blueprint
+    from app.routes.gamification import gamification
 
     app.register_blueprint(auth)
     app.register_blueprint(onboarding)
     app.register_blueprint(dashboard)
     app.register_blueprint(chatbot)
     app.register_blueprint(test)
+    app.register_blueprint(scheduler_blueprint)
+    app.register_blueprint(gamification)
 
     # ── Security headers ──────────────────────────────────────────────────────
     @app.after_request
@@ -105,7 +109,10 @@ def create_app():
 
     with app.app_context():
         from app import models
+        from app.services.gamification import seed_badges, seed_challenges
         db.create_all()
+        seed_badges()
+        seed_challenges()
         print("✅ SKILL PILOT database ready")
 
     return app

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard — SKILL PILOT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left:2px solid var(--accent);}
+        
+        .main{margin-left:240px;flex:1;padding:30px; max-width:1000px; margin: 0 auto; margin-left:240px;}
+        
+        .topbar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px;}
+        .greeting{font-family:'Syne',sans-serif;font-weight:700;font-size:2rem;}
+        
+        .tabs { display:flex; gap:20px; border-bottom:1px solid var(--border); margin-bottom:20px; }
+        .tab-btn { background:none; border:none; color:var(--text-muted); padding:10px 15px; font-family:'Syne',sans-serif; font-size:1.1rem; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;}
+        .tab-btn.active { color:var(--text-accent); border-bottom-color:var(--accent); font-weight:700; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; animation:fadeInUp 0.3s;}
+        
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:16px; text-align:left; border-bottom:1px solid var(--border); }
+        th { color:var(--text-muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; }
+        tr.highlight { background:var(--accent-glow); border-left:4px solid var(--accent); }
+        
+        .rank-medal { font-size:1.5rem; display:flex; justify-content:center; align-items:center; width:40px;}
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link">🏠 Dashboard</a>
+        <a href="/gamification" class="nav-link">🎮 Gamification Hub</a>
+        <a href="/gamification/badges" class="nav-link">🏅 Badges</a>
+        <a href="/gamification/leaderboard" class="nav-link active">🏆 Leaderboard</a>
+    </nav>
+</aside>
+
+<main class="main">
+    <div class="topbar">
+        <div>
+            <div class="greeting">Global Leaderboard</div>
+            <p style="color:var(--text-muted); font-size:1rem; margin-top:5px;">See how you rank among other scholars.</p>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this, 'weekly-tab')">This Week</button>
+        <button class="tab-btn" onclick="switchTab(this, 'alltime-tab')">All Time</button>
+    </div>
+    
+    <div id="weekly-tab" class="tab-content active">
+        <div style="background:var(--bg-card); border-radius:16px; border:1px solid var(--border); overflow:hidden;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:60px; text-align:center;">Rank</th>
+                        <th>Player</th>
+                        <th>Title</th>
+                        <th style="text-align:right;">Weekly XP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in weekly %}
+                    <tr class="{% if row.user_id == current_user.id %}highlight{% endif %}">
+                        <td>
+                            <div class="rank-medal">
+                                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight:700; font-size:1.05rem;">{{ row.name }} {% if row.user_id == current_user.id %}(You){% endif %}</div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.9rem;">Level {{ row.level }} - {{ row.rank_title }}</div>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="font-weight:800; color:var(--text-accent); font-family:'Syne',sans-serif; font-size:1.1rem;">{{ row.xp }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="alltime-tab" class="tab-content">
+        <div style="background:var(--bg-card); border-radius:16px; border:1px solid var(--border); overflow:hidden;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:60px; text-align:center;">Rank</th>
+                        <th>Player</th>
+                        <th>Title</th>
+                        <th style="text-align:right;">Total XP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in alltime %}
+                    <tr class="{% if row.user_id == current_user.id %}highlight{% endif %}">
+                        <td>
+                            <div class="rank-medal">
+                                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight:700; font-size:1.05rem;">{{ row.name }} {% if row.user_id == current_user.id %}(You){% endif %}</div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.9rem;">Level {{ row.level }} - {{ row.rank_title }}</div>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="font-weight:800; color:var(--text-accent); font-family:'Syne',sans-serif; font-size:1.1rem;">{{ row.xp }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script>
+    function switchTab(btn, tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+</body>
+</html>

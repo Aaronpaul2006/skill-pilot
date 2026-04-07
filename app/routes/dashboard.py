@@ -2,7 +2,7 @@ import random
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
-from app.models import ChatMessage, LearningProfile
+from app.models import ChatMessage, LearningProfile, StudyPlan, StudySession
 from datetime import datetime
 
 dashboard = Blueprint('dashboard', __name__)
@@ -96,6 +96,14 @@ def index():
     pace_info = PACE_ADVICE.get(profile.learning_pace, {})
     recommended_topics = SUBJECT_TOPICS.get(profile.subject_focus, [])
     
+    active_plans_count = StudyPlan.query.filter_by(user_id=current_user.id).count()
+    today = datetime.now().date()
+    todays_sessions = StudySession.query.join(StudyPlan).filter(
+        StudyPlan.user_id == current_user.id,
+        StudySession.session_date == today,
+        StudySession.is_completed == False
+    ).all()
+
     hour = datetime.now().hour
     if hour < 12:
         greeting = "Good Morning"
@@ -117,7 +125,9 @@ def index():
         recommended_topics=recommended_topics,
         greeting=greeting,
         quote=quote,
-        quote_author=quote_author
+        quote_author=quote_author,
+        active_plans_count=active_plans_count,
+        todays_sessions=todays_sessions
     )
 
 @dashboard.route('/dashboard/profile-edit', methods=['GET', 'POST'])

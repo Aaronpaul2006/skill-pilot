@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Planner — SKILL PILOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary:#0a0a0f; --bg-secondary:#12121a; --bg-card:#1a1a26;
+            --border:#2a2a3d; --accent:#6c63ff; --accent-glow:rgba(108,99,255,0.15);
+            --accent2:#ff6584; --accent3:#43e97b; --accent4:#f7971e;
+            --text-primary:#e8e8f0; --text-muted:#888899; --text-accent:#a78bfa;
+            --gradient-main:linear-gradient(135deg,#6c63ff,#a78bfa);
+            --shadow:0 4px 24px rgba(0,0,0,0.4); --shadow-accent:0 4px 24px rgba(108,99,255,0.2);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+        .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;transition:transform 0.3s;}
+        .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+        .avatar-sm{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:white;flex-shrink:0;}
+        .sidebar-user-info .name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+        .sidebar-user-info .email{font-size:0.75rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+        .sidebar-nav{flex:1;padding:16px 0;}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text-muted);text-decoration:none;font-size:0.9rem;transition:all 0.2s;border-left:3px solid transparent;}
+        .nav-link:hover,.nav-link.active{color:var(--text-primary);background:var(--accent-glow);border-left-color:var(--accent);}
+        .nav-link.active{color:var(--text-accent);}
+        .nav-icon{font-size:1.1rem;width:22px;flex-shrink:0;}
+        .sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--text-muted);}
+
+        .main{margin-left:240px;flex:1;padding:30px;max-width:calc(100% - 240px);}
+        .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;animation:fadeInUp 0.4s ease forwards;}
+        .greeting{font-family:'Syne',sans-serif;font-weight:700;font-size:1.5rem;}
+        
+        .flash-msg{padding:12px 16px;border-radius:10px;background:var(--bg-card);border-left:4px solid var(--accent3);font-size:0.88rem;margin-bottom:20px;color:var(--accent3);}
+        .flash-msg.error{border-left-color:var(--accent2);color:var(--accent2);}
+        .flash-msg.warning{border-left-color:var(--accent4);color:var(--accent4);}
+
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:16px;padding:20px;box-shadow:var(--shadow);animation:fadeInUp 0.4s ease forwards;}
+        .btn-primary-lg{display:inline-block;padding:13px 28px;background:var(--gradient-main);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:var(--shadow-accent);}
+        .btn-primary-lg:hover{transform:scale(1.02);}
+        .btn-secondary{display:inline-block;padding:9px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:600;text-decoration:none;transition:all 0.2s;}
+        .btn-secondary:hover{border-color:var(--accent);color:var(--text-accent);}
+        
+        .empty-state{text-align:center;padding:60px 40px;color:var(--text-muted); background:var(--bg-card); border-radius:16px; border:1px dashed var(--border);}
+        .empty-state .empty-icon{font-size:3.5rem;margin-bottom:16px;}
+        .empty-state p{margin-bottom:24px; font-size:1.1rem;}
+
+        .hamburger{display:none;position:fixed;top:16px;left:16px;z-index:200;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;font-size:1.2rem;}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;}
+        @media(max-width:768px){
+            .sidebar{transform:translateX(-100%);}
+            .sidebar.open{transform:translateX(0);}
+            .sidebar-overlay.show{display:block;}
+            .main{margin-left:0;max-width:100%;padding:20px 16px;padding-top:64px;}
+            .hamburger{display:flex;}
+        }
+    </style>
+</head>
+<body>
+
+<button class="hamburger" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">✈️ <span>SKILL PILOT</span></div>
+    <div class="sidebar-user">
+        <div class="avatar-sm">{{ current_user.name[0].upper() }}</div>
+        <div class="sidebar-user-info">
+            <div class="name">{{ current_user.name }}</div>
+            <div class="email">{{ current_user.email }}</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/chat" class="nav-link"><span class="nav-icon">💬</span> AI Chat</a>
+        <a href="/scheduler" class="nav-link active"><span class="nav-icon">📅</span> Planner</a>
+        <a href="/dashboard/stats" class="nav-link"><span class="nav-icon">📊</span> Stats</a>
+        <a href="/dashboard/profile-edit" class="nav-link"><span class="nav-icon">✏️</span> Edit Profile</a>
+        <a href="/logout" class="nav-link"><span class="nav-icon">🚪</span> Logout</a>
+    </nav>
+    <div class="sidebar-bottom">v1.0 Beta • SKILL PILOT</div>
+</aside>
+
+<main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+        <div class="flash-msg {% if category %} {{ category }} {% endif %}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="topbar">
+        <div>
+            <div class="greeting">📅 Smart Study Planner</div>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-top:5px;">AI-generated dynamic timelines for your exams</p>
+        </div>
+        <div style="text-align:right;">
+            <button onclick="document.getElementById('createModal').style.display='flex'" class="btn-primary-lg" style="margin-bottom:0;">+ Create New Plan</button>
+        </div>
+    </div>
+
+    <div>
+        {% if active_plans %}
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+            {% for pd in active_plans %}
+            <div class="stat-card" style="border-left-color:{% if pd.days_remaining < 3 %}var(--accent2){% else %}var(--accent){% endif %}; position:relative;">
+                {% if pd.plan.is_cram_mode %}
+                <div style="position:absolute; top:-10px; right:10px; background:var(--accent2); color:white; font-size:0.7rem; font-weight:700; padding:4px 10px; border-radius:12px; font-family:'Syne',sans-serif;">CRAM MODE</div>
+                {% endif %}
+                
+                <h3 style="font-family:'Syne',sans-serif; margin-bottom:10px; padding-right:60px; font-size:1.2rem;">{{ pd.plan.exam_name }}</h3>
+                
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:0.85rem;">
+                    <span style="color:var(--text-muted);">{{ pd.plan.exam_date.strftime('%b %d, %Y') }}</span>
+                    <strong style="color:{% if pd.days_remaining < 3 %}var(--accent2){% elif pd.days_remaining < 7 %}var(--accent4){% else %}var(--accent3){% endif %};">
+                        {{ pd.days_remaining }} days left
+                    </strong>
+                </div>
+                
+                <div style="background:var(--bg-secondary); height:8px; border-radius:4px; margin-bottom:8px; overflow:hidden;">
+                    <div style="background:var(--gradient-main); height:100%; width:{{ pd.progress }}%; transition:width 0.3s;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:20px; color:var(--text-muted);">
+                    <span>Progress</span>
+                    <span>{{ pd.progress }}%</span>
+                </div>
+                
+                <a href="/scheduler/{{ pd.plan.id }}" class="btn-secondary" style="display:block; text-align:center;">View Plan Details</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">⏳</div>
+            <p>No active study plans. Let the AI build a perfect schedule for you!</p>
+            <button onclick="document.getElementById('createModal').style.display='flex'" class="btn-primary-lg">Create Your First Plan</button>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-primary); border:1px solid var(--border); border-radius:16px; padding:30px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="font-family:'Syne',sans-serif;">✨ Create AI Study Plan</h2>
+            <button onclick="document.getElementById('createModal').style.display='none'" style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <form action="/scheduler/create" method="POST" id="createForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:var(--text-muted);">Exam / Goal Name</label>
+                <input type="text" name="exam_name" required style="width:100%; padding:12px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit;" placeholder="e.g. Data Structures Final">
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:var(--text-muted);">Exam Date</label>
+                <input type="date" name="exam_date" id="examDateInput" required style="width:100%; padding:12px; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit; color-scheme:dark;">
+            </div>
+            
+            <div style="margin-bottom:20px; background:var(--bg-secondary); padding:16px; border-radius:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <label style="font-size:0.9rem; color:var(--text-muted); margin:0;">Topics to Cover</label>
+                    <button type="button" onclick="addTopicRow()" style="background:var(--accent-glow); color:var(--text-accent); border:1px solid var(--accent); border-radius:6px; padding:4px 10px; cursor:pointer; font-size:0.8rem;">+ Add Topic</button>
+                </div>
+                
+                <div id="topicsContainer">
+                    <div style="display:flex; gap:10px; margin-bottom:10px;" class="topic-row">
+                        <input type="text" name="topics[]" required placeholder="Topic name (e.g. Arrays)" style="flex:2; padding:10px; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit;">
+                        <select name="priorities[]" style="flex:1; padding:10px; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit;">
+                            <option value="High">High</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:var(--bg-primary); border:1px solid var(--border); color:var(--accent2); padding:0 12px; border-radius:8px; cursor:pointer;">&times;</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom:24px; display:flex; align-items:center; gap:12px;">
+                <input type="checkbox" name="is_cram_mode" id="cramMode" style="width:18px; height:18px; accent-color:var(--accent2);">
+                <label for="cramMode" style="font-size:0.9rem;">
+                    <strong>Enable Cram Mode ⚡</strong><br>
+                    <span style="color:var(--text-muted); font-size:0.8rem;">Intensive schedule focusing purely on High priority topics. (Auto-enabled if < 3 days)</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn-primary-lg" id="submitBtn" style="width:100%;">Generate AI Study Plan</button>
+            <div id="loadingText" style="display:none; text-align:center; font-style:italic; font-size:0.85rem; color:var(--accent); margin-top:12px;">
+                🧠 AI is crunching the optimal schedule... this may take 10-15 seconds.
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('examDateInput').setAttribute('min', tomorrow.toISOString().split('T')[0]);
+
+    function addTopicRow() {
+        const container = document.getElementById('topicsContainer');
+        if (container.children.length >= 15) {
+            alert('Maximum 15 topics allowed.');
+            return;
+        }
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.gap = '10px';
+        row.style.marginBottom = '10px';
+        row.className = 'topic-row';
+        row.innerHTML = `
+            <input type="text" name="topics[]" required placeholder="Topic name" style="flex:2; padding:10px; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit;">
+            <select name="priorities[]" style="flex:1; padding:10px; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:white; font-family:inherit;">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <button type="button" onclick="this.parentElement.remove()" style="background:var(--bg-primary); border:1px solid var(--border); color:var(--accent2); padding:0 12px; border-radius:8px; cursor:pointer;">&times;</button>
+        `;
+        container.appendChild(row);
+    }
+    
+    document.getElementById('createForm').onsubmit = function() {
+        document.getElementById('submitBtn').style.opacity = '0.5';
+        document.getElementById('submitBtn').textContent = 'Generating...';
+        document.getElementById('submitBtn').style.pointerEvents = 'none';
+        document.getElementById('loadingText').style.display = 'block';
+    };
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+</script>
+</body>
+</html>

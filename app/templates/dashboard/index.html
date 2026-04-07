@@ -22,7 +22,7 @@
         /* SIDEBAR */
         .sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;top:0;left:0;z-index:100;transition:transform 0.3s;}
         .sidebar-logo{padding:24px 20px 16px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;border-bottom:1px solid var(--border);}
-        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-logo span{background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
         .sidebar-user{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
         .avatar-sm{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:white;flex-shrink:0;}
         .sidebar-user-info .name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
@@ -52,7 +52,7 @@
         .stat-card:nth-child(2){animation-delay:0.2s;border-left-color:var(--accent3);}
         .stat-card:nth-child(3){animation-delay:0.3s;border-left-color:var(--accent4);}
         .stat-card:hover{transform:translateY(-2px);}
-        .stat-num{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+        .stat-num{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;background:var(--gradient-main);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
         .stat-label{color:var(--text-muted);font-size:0.82rem;margin-top:6px;}
 
         /* PROFILE CARD */
@@ -139,10 +139,12 @@
     </div>
     <nav class="sidebar-nav">
         <a href="/dashboard" class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="/gamification" class="nav-link"><span class="nav-icon">🎮</span> Gamification Hub</a>
         <a href="/chat" class="nav-link">
             <span class="nav-icon">💬</span> AI Chat
             {% if total_messages == 0 %}<span class="nav-badge">NEW</span>{% endif %}
         </a>
+        <a href="/scheduler" class="nav-link"><span class="nav-icon">📅</span> Planner</a>
         <a href="/dashboard/stats" class="nav-link"><span class="nav-icon">📊</span> Stats</a>
         <a href="/dashboard/profile-edit" class="nav-link"><span class="nav-icon">✏️</span> Edit Profile</a>
         <a href="/logout" class="nav-link"><span class="nav-icon">🚪</span> Logout</a>
@@ -199,6 +201,73 @@
         <div class="profile-right">
             <a href="/chat" class="btn-primary-lg">💬 Start AI Chat →</a>
             <div class="chat-tip">{{ pace_info.chat_tip }}</div>
+        </div>
+    </div>
+
+    <!-- GAMIFICATION: Your Progress Widget -->
+    <div class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="section-title" style="margin-bottom:0;">🎮 Your Progress</div>
+            <a href="/gamification" class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;">Gamification Hub &rarr;</a>
+        </div>
+        
+        <div class="card" id="gamification-widget" style="display:flex; gap:30px; align-items:center; border-left:4px solid var(--accent); position:relative; overflow:hidden;">
+            <!-- Level Circle -->
+            <div class="level-circle" style="width:80px; height:80px; border-radius:50%; background:var(--bg-secondary); border:3px solid var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0;">
+                <span style="font-size:0.6rem; color:var(--text-muted);">LEVEL</span>
+                <span class="level-num" id="widget-level" style="font-size:2rem; font-family:'Syne',sans-serif; font-weight:800; line-height:1; color:var(--text-primary);">--</span>
+            </div>
+            
+            <!-- Details & XP Bar -->
+            <div style="flex:1; min-width:200px;">
+                <h3 id="widget-rank" style="font-family:'Syne',sans-serif; color:var(--text-accent); font-size:1.4rem; margin-bottom:4px;">Loading Rank...</h3>
+                
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-muted); margin-bottom:6px;">
+                    <span><span id="widget-xp-current">0</span> XP</span>
+                    <span><span id="widget-xp-next">0</span> XP to Next</span>
+                </div>
+                
+                <div class="progress-bar-container" style="width:100%; height:8px; background:var(--bg-primary); border-radius:4px; overflow:hidden;">
+                    <div id="widget-xp-bar" class="progress-bar-fill" style="height:100%; background:var(--gradient-main); width:0%; transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+            
+            <!-- Streak Info -->
+            <div style="flex-shrink:0; text-align:center; padding:0 20px; border-left:1px solid var(--border);">
+                <div style="font-size:2rem; line-height:1; animation: fadeInUp 1s infinite alternate;">🔥</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px; font-weight:700;"><span id="widget-streak">0</span> Day Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SMART STUDY PLANNER WIDGET -->
+    <div class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="section-title" style="margin-bottom:0;">📅 Smart Study Planner</div>
+            <a href="/scheduler" class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;">View All &rarr;</a>
+        </div>
+        <div class="stat-card" style="width:100%; border-left-color:var(--accent4); display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+            <div style="flex: 1; min-width:200px;">
+                <div class="stat-num" style="font-size:1.5rem;">{{ active_plans_count }}</div>
+                <div class="stat-label">Active Study Plans</div>
+            </div>
+            <div style="flex: 3; min-width:300px;">
+                <h4 style="margin-bottom:10px; font-size:0.95rem;">Today's Sessions</h4>
+                {% if todays_sessions %}
+                    <div style="display:flex; gap:10px; flex-direction:column;">
+                    {% for session in todays_sessions %}
+                        <div style="background:var(--bg-secondary); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="color:var(--text-accent)">{{ session.topic }}</strong> <span style="color:var(--text-muted); font-size:0.85rem;">({{ session.duration_hours }}h)</span>
+                            </div>
+                            <a href="/scheduler/{{ session.plan_id }}" class="badge" style="text-decoration:none; color:inherit;">Open Plan</a>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color:var(--text-muted); font-size:0.88rem;">You have no pending study sessions for today. Take a break or <a href="/scheduler" style="color:var(--accent);">create a study plan</a>!</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -267,6 +336,22 @@
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('overlay').classList.toggle('show');
     }
+
+    // Fetch and populate Gamification Stats
+    fetch('/gamification/api/stats')
+        .then(response => response.json())
+        .then(stats => {
+            if(stats.level !== undefined) {
+                document.getElementById('widget-level').textContent = stats.level;
+                document.getElementById('widget-rank').textContent = stats.rank;
+                document.getElementById('widget-xp-current').textContent = stats.xp_current_level;
+                document.getElementById('widget-xp-next').textContent = stats.xp_to_next_level;
+                document.getElementById('widget-xp-bar').style.width = stats.level_progress_pct + '%';
+                document.getElementById('widget-streak').textContent = stats.streak_current;
+            } else {
+                document.getElementById('gamification-widget').innerHTML = "<p>Play a session to start tracking your gamification progress!</p>";
+            }
+        }).catch(err => console.error("Error fetching gamification stat.", err));
 </script>
 </body>
 </html>
