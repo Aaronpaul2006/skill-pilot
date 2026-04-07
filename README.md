@@ -30,6 +30,8 @@ Built as Micro Project - 02 | EdTech & AI | Industry Focus
 | ⚡ Pace Adaptation | Detects Slow / Medium / Fast learning pace |
 | 🔄 Real-time Signals | Auto-adjusts pace based on chat behavior |
 | 🧠 AI Chatbot | Powered by Google Gemini 2.5 Flash |
+| 📅 Study Planner | AI-generated dynamic exam schedules |
+| 🎮 Gamification | XP, streaks, badges, challenges, leaderboards |
 | 📊 Dashboard | Personalized tips, topics, stats |
 | 📈 Analytics | Per-subject learning breakdown |
 | 🔒 Security | bcrypt, rate limiting, input sanitization |
@@ -117,6 +119,8 @@ http://127.0.0.1:5000/test
 | `/login` | Login page |
 | `/dashboard` | Student dashboard |
 | `/chat` | AI tutor chat |
+| `/scheduler` | Smart Study Planner |
+| `/gamification` | Gamification Hub & Leaderboard |
 
 ### Quick Demo Login
 After visiting `/test/setup-demo`:
@@ -135,15 +139,21 @@ skill-pilot/
 │   │   ├── onboarding.py    # VARK quiz + pace detection
 │   │   ├── dashboard.py     # Personalized dashboard
 │   │   ├── chatbot.py       # Gemini AI chatbot
+│   │   ├── scheduler.py     # Smart Study Planner
+│   │   ├── gamification.py  # Gamification routes
 │   │   └── test_routes.py   # Testing + demo routes
+│   ├── services/
+│   │   └── gamification.py  # Core gamification engine
 │   ├── templates/
 │   │   ├── auth/            # Login, Register, Profile
 │   │   ├── onboarding/      # Quiz, Result
 │   │   ├── dashboard/       # Dashboard, Stats, Edit
 │   │   ├── chatbot/         # Chat interface
+│   │   ├── scheduler/       # Study Planner + session view
+│   │   ├── gamification/    # Gamification Hub, Badges, Leaderboard
 │   │   └── errors/          # 404, 500, 429 pages
 │   ├── __init__.py          # Flask app factory
-│   └── models.py            # User, LearningProfile, ChatMessage
+│   └── models.py            # User, Profile, Chat, Gamification & Planner Models
 ├── config.py                # App configuration
 ├── requirements.txt         # Python dependencies
 ├── run.py                   # Application entry point
@@ -168,6 +178,13 @@ skill-pilot/
 ### ChatMessage
 - `role` (user/assistant)
 - `content`, `subject`, `timestamp`
+
+### Smart Planner & Gamification
+- `StudyPlan`, `StudySession` (Manages auto-generated study blocks)
+- `PlayerProfile` (Tracks Level, XP, streaks, user progress)
+- `Badge`, `UserBadge` (Unlockable achievements tracking)
+- `Challenge`, `UserChallenge` (Daily & weekly assigned tracked goals)
+- `XPEvent` (Audit log of all earned points)
 
 ---
 
@@ -199,14 +216,14 @@ skill-pilot/
 
 ## 🗺️ Future Roadmap
 
+- [x] Gamification (streaks, badges, leaderboard)
+- [x] Study schedule generator
 - [ ] Mobile app (React Native)
 - [ ] Voice input for auditory learners
 - [ ] PDF/notes upload and AI explanation
 - [ ] Teacher dashboard for class monitoring
-- [ ] Gamification (streaks, badges, leaderboard)
 - [ ] Multilingual support (Tamil, Hindi, Telugu)
 - [ ] Fine-tuned subject-specific AI models
-- [ ] Study schedule generator
 
 ---
 
